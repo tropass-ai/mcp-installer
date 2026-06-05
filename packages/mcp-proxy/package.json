@@ -5,17 +5,27 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "tropass-mcp-proxy": "./bin/tropass-mcp-proxy.js",
-    "tropass-mcp-install": "./bin/tropass-mcp-proxy.js"
+    "tropass-mcp-proxy": "./dist/bin/tropass-mcp-proxy.js",
+    "tropass-mcp-install": "./dist/bin/tropass-mcp-proxy.js"
+  },
+  "dependencies": {
+    "commander": "^14.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3"
   },
   "engines": {
     "node": ">=20"
   },
   "files": [
-    "bin/",
-    "src/"
+    "dist/"
   ],
   "scripts": {
-    "check": "node --check bin/tropass-mcp-proxy.js && node --check src/*.js"
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint bin src test --ext .ts",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build"
   }
 }

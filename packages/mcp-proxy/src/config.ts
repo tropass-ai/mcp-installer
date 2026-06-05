@@ -1,8 +1,9 @@
 import process from "node:process";
 
 import { DEFAULT_MCP_URL, DEFAULT_TIMEOUT_MS, DEFAULT_TOKEN_HEADER } from "./constants.js";
+import type { RuntimeConfig } from "./types.js";
 
-export function readRuntimeConfig() {
+export function readRuntimeConfig(): RuntimeConfig {
   const mcpUrl = process.env.TROPASS_MCP_URL || DEFAULT_MCP_URL;
   const apiToken = process.env.TROPASS_API_TOKEN;
   const tokenHeader = process.env.TROPASS_API_TOKEN_HEADER || DEFAULT_TOKEN_HEADER;
@@ -24,4 +25,3 @@ export function readRuntimeConfig() {
     clientVersion: process.env.TROPASS_MCP_CLIENT_VERSION || "0.1.0"
   };
 }
-

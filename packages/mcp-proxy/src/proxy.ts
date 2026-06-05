@@ -3,10 +3,11 @@ import process from "node:process";
 
 import { readRuntimeConfig } from "./config.js";
 import { postMcpMessage } from "./http-client.js";
-import { isJsonRpcRequestWithId, patchInitializeRequest, writeJsonRpcError, writeMessage } from "./json-rpc.js";
+import { isJsonObject, isJsonRpcRequestWithId, patchInitializeRequest, writeJsonRpcError, writeMessage } from "./json-rpc.js";
 import { logError } from "./logging.js";
+import type { JsonRpcMessage, RuntimeConfig } from "./types.js";
 
-export async function runProxy() {
+export async function runProxy(): Promise<void> {
   let config;
   try {
     config = readRuntimeConfig();
@@ -25,20 +26,27 @@ export async function runProxy() {
   }
 }
 
-async function handleLine(line, config) {
+async function handleLine(line: string, config: RuntimeConfig): Promise<void> {
   const trimmedLine = line.trim();
   if (!trimmedLine) {
     return;
   }
 
-  let message;
+  let parsedMessage: unknown;
   try {
-    message = JSON.parse(trimmedLine);
+    parsedMessage = JSON.parse(trimmedLine);
   } catch (error) {
     logError("invalid JSON-RPC message", error);
     writeJsonRpcError(null, -32700, "Parse error");
     return;
   }
+
+  if (!isJsonObject(parsedMessage)) {
+    writeJsonRpcError(null, -32600, "Invalid Request");
+    return;
+  }
+
+  const message: JsonRpcMessage = parsedMessage;
 
   try {
     const patchedMessage = patchInitializeRequest(message, config);
@@ -57,4 +65,3 @@ async function handleLine(line, config) {
     }
   }
 }
-

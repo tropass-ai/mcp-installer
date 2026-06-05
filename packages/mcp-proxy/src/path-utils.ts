@@ -1,7 +1,7 @@
 import path from "node:path";
 import process from "node:process";
 
-export function expandHome(filePath) {
+export function expandHome(filePath: string): string {
   if (filePath === "~") {
     return process.env.HOME || process.env.USERPROFILE || filePath;
   }
@@ -12,7 +12,7 @@ export function expandHome(filePath) {
   return filePath;
 }
 
-export function resolveClaudeDesktopConfigPath() {
+export function resolveClaudeDesktopConfigPath(): string {
   if (process.platform === "darwin") {
     return path.join(process.env.HOME || "", "Library", "Application Support", "Claude", "claude_desktop_config.json");
   }
@@ -22,4 +22,3 @@ export function resolveClaudeDesktopConfigPath() {
   }
   return path.join(process.env.HOME || "", ".config", "Claude", "claude_desktop_config.json");
 }
-

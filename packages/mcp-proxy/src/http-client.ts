@@ -1,4 +1,6 @@
-export async function postMcpMessage(message, config) {
+import type { RuntimeConfig } from "./types.js";
+
+export async function postMcpMessage(message: unknown, config: RuntimeConfig): Promise<unknown> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), config.timeoutMs);
 
@@ -25,7 +27,7 @@ export async function postMcpMessage(message, config) {
   }
 }
 
-async function readResponseBody(response) {
+async function readResponseBody(response: Response): Promise<unknown> {
   const contentType = response.headers.get("content-type") || "";
   const body = await response.text();
 
@@ -38,8 +40,8 @@ async function readResponseBody(response) {
   return JSON.parse(body);
 }
 
-function parseSseBody(body) {
-  const dataLines = [];
+function parseSseBody(body: string): unknown {
+  const dataLines: string[] = [];
   for (const line of body.split(/\r?\n/)) {
     if (line.startsWith("data:")) {
       dataLines.push(line.slice("data:".length).trimStart());
@@ -50,4 +52,3 @@ function parseSseBody(body) {
   }
   return JSON.parse(dataLines.join("\n"));
 }
-

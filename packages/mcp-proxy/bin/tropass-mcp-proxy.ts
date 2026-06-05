@@ -7,4 +7,3 @@ main().catch((error) => {
   process.stderr.write(`[tropass-mcp-proxy] fatal error: ${detail}\n`);
   process.exit(1);
 });
-

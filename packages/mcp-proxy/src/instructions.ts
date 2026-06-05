@@ -34,7 +34,9 @@ Use the Tropass MCP server to call ML models.
 - Do not retry rate-limit errors in a loop.
 `;
 
-export function buildInstructionContent(client) {
+import type { InstallClient } from "./types.js";
+
+export function buildInstructionContent(client: InstallClient): string {
   if (client === "cursor") {
     return `---
 description: Use Tropass MCP for ML model calls
@@ -43,11 +45,10 @@ alwaysApply: true
 
 ${TROPASS_MCP_INSTRUCTIONS}`;
   }
-  if (client === "claude-desktop") {
+  if (client === "claude") {
     return `${TROPASS_MCP_INSTRUCTIONS}
 Add these instructions to your Claude project or custom instructions together with the Tropass MCP server config.
 `;
   }
   return TROPASS_MCP_INSTRUCTIONS;
 }
-

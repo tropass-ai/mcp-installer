@@ -6,69 +6,92 @@ import process from "node:process";
 import { DEFAULT_MCP_URL, SUPPORTED_INSTALL_CLIENTS } from "./constants.js";
 import { buildInstructionContent, MANAGED_INSTRUCTIONS_BEGIN, MANAGED_INSTRUCTIONS_END } from "./instructions.js";
 import { expandHome, resolveClaudeDesktopConfigPath } from "./path-utils.js";
+import type {
+  InstallClient,
+  InstallOptions,
+  InstallResult,
+  JsonObject,
+  RawInstallOptions,
+  ValidatedInstallOptions
+} from "./types.js";
 
-export async function runInstall(argv) {
-  const options = parseInstallArgs(argv);
-  const client = options.client || await promptForClient();
+type ServerConfig = {
+  command: "npx";
+  args: ["-y", "@tropass/mcp-proxy"];
+  env: {
+    TROPASS_MCP_URL: string;
+    TROPASS_API_TOKEN: string;
+  };
+};
 
-  if (!SUPPORTED_INSTALL_CLIENTS.has(client)) {
-    throw new Error(`Unsupported client '${client}'. Use one of: ${[...SUPPORTED_INSTALL_CLIENTS].join(", ")}.`);
-  }
-
+export async function runInstall(rawOptions: RawInstallOptions = {}): Promise<void> {
+  const options = normalizeInstallOptions(rawOptions);
+  const client = options.client ?? await promptForClient();
   const mcpUrl = options.yes ? options.mcpUrl : await promptForText("Tropass MCP URL", options.mcpUrl);
-  const apiToken = options.apiToken || await promptForSecret("Tropass API token");
+  const apiToken = options.apiToken ?? await promptForSecret("Tropass API token");
 
-  if (!apiToken) {
-    throw new Error("Tropass API token is required.");
-  }
+  const result = installTropassMcp({
+    ...options,
+    client,
+    mcpUrl,
+    apiToken
+  });
 
-  const configPath = resolveConfigPath(client, options);
-  installServerConfig(client, configPath, mcpUrl, apiToken);
-
-  const instructionPath = resolveInstructionPath(client, options, configPath);
-  installInstructions(client, instructionPath);
-
-  process.stderr.write(`Installed Tropass MCP for ${client}.\n`);
-  process.stderr.write(`Config file: ${configPath}\n`);
-  process.stderr.write(`Instructions file: ${instructionPath}\n`);
+  process.stderr.write(`Installed Tropass MCP for ${result.client}.\n`);
+  process.stderr.write(`Config file: ${result.configPath}\n`);
+  process.stderr.write(`Instructions file: ${result.instructionPath}\n`);
   process.stderr.write("Restart or reload your MCP client to pick up the new server.\n");
 }
 
-function parseInstallArgs(argv) {
-  const options = {
-    client: undefined,
-    configPath: undefined,
-    mcpUrl: process.env.TROPASS_MCP_URL || DEFAULT_MCP_URL,
-    apiToken: process.env.TROPASS_API_TOKEN,
-    projectDir: process.cwd(),
-    yes: false
+export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult {
+  const options = validateInstallOptions(normalizeInstallOptions(rawOptions));
+
+  const configPath = resolveConfigPath(options.client, options);
+  installServerConfig(options.client, configPath, options.mcpUrl, options.apiToken);
+
+  const instructionPath = resolveInstructionPath(options.client, options, configPath);
+  installInstructions(options.client, instructionPath);
+
+  return {
+    client: options.client,
+    configPath,
+    instructionPath
   };
-
-  for (let index = 0; index < argv.length; index += 1) {
-    const arg = argv[index];
-    if (arg === "--client") {
-      options.client = argv[++index];
-    } else if (arg === "--config") {
-      options.configPath = argv[++index];
-    } else if (arg === "--url") {
-      options.mcpUrl = argv[++index];
-    } else if (arg === "--token") {
-      options.apiToken = argv[++index];
-    } else if (arg === "--project") {
-      options.projectDir = argv[++index];
-    } else if (arg === "--yes" || arg === "-y") {
-      options.yes = true;
-    } else if (!arg.startsWith("-") && options.client === undefined) {
-      options.client = arg;
-    } else {
-      throw new Error(`Unknown install argument: ${arg}`);
-    }
-  }
-
-  return options;
 }
 
-function resolveConfigPath(client, options) {
+function normalizeInstallOptions(options: RawInstallOptions): InstallOptions {
+  return {
+    client: options.client,
+    configPath: options.config ?? options.configPath,
+    mcpUrl: options.url ?? options.mcpUrl ?? process.env.TROPASS_MCP_URL ?? DEFAULT_MCP_URL,
+    apiToken: options.token ?? options.apiToken ?? process.env.TROPASS_API_TOKEN,
+    projectDir: options.project ?? options.projectDir ?? process.cwd(),
+    yes: Boolean(options.yes)
+  };
+}
+
+function validateInstallOptions(options: InstallOptions): ValidatedInstallOptions {
+  if (!isInstallClient(options.client)) {
+    throw new Error(`Unsupported client '${options.client}'. Use one of: ${[...SUPPORTED_INSTALL_CLIENTS].join(", ")}.`);
+  }
+  if (!options.apiToken) {
+    throw new Error("Tropass API token is required.");
+  }
+  if (!options.mcpUrl) {
+    throw new Error("Tropass MCP URL is required.");
+  }
+  return {
+    ...options,
+    client: options.client,
+    apiToken: options.apiToken
+  };
+}
+
+function isInstallClient(value: unknown): value is InstallClient {
+  return typeof value === "string" && SUPPORTED_INSTALL_CLIENTS.has(value as InstallClient);
+}
+
+function resolveConfigPath(client: InstallClient, options: ValidatedInstallOptions): string {
   if (options.configPath) {
     return path.resolve(expandHome(options.configPath));
   }
@@ -83,14 +106,10 @@ function resolveConfigPath(client, options) {
   if (client === "generic") {
     return path.join(projectDir, "mcp.json");
   }
-  if (client === "claude-desktop") {
-    return resolveClaudeDesktopConfigPath();
-  }
-
-  throw new Error(`Unsupported client: ${client}`);
+  return resolveClaudeDesktopConfigPath();
 }
 
-function resolveInstructionPath(client, options, configPath) {
+function resolveInstructionPath(client: InstallClient, options: ValidatedInstallOptions, configPath: string): string {
   const projectDir = path.resolve(expandHome(options.projectDir));
   if (client === "cursor") {
     return path.join(projectDir, ".cursor", "rules", "tropass-mcp.mdc");
@@ -101,14 +120,10 @@ function resolveInstructionPath(client, options, configPath) {
   if (client === "generic") {
     return path.join(projectDir, "AGENTS.md");
   }
-  if (client === "claude-desktop") {
-    return path.join(path.dirname(configPath), "tropass-mcp-instructions.md");
-  }
-
-  throw new Error(`Unsupported client: ${client}`);
+  return path.join(path.dirname(configPath), "tropass-mcp-instructions.md");
 }
 
-function readJsonFile(filePath) {
+function readJsonFile(filePath: string): JsonObject {
   if (!fs.existsSync(filePath)) {
     return {};
   }
@@ -117,10 +132,15 @@ function readJsonFile(filePath) {
   if (!payload) {
     return {};
   }
-  return JSON.parse(payload);
+
+  const parsedPayload: unknown = JSON.parse(payload);
+  if (!isJsonObject(parsedPayload)) {
+    throw new Error(`${filePath} must contain a JSON object.`);
+  }
+  return parsedPayload;
 }
 
-function buildServerConfig(mcpUrl, apiToken) {
+function buildServerConfig(mcpUrl: string, apiToken: string): ServerConfig {
   return {
     command: "npx",
     args: ["-y", "@tropass/mcp-proxy"],
@@ -131,13 +151,13 @@ function buildServerConfig(mcpUrl, apiToken) {
   };
 }
 
-function installServerConfig(client, configPath, mcpUrl, apiToken) {
+function installServerConfig(client: InstallClient, configPath: string, mcpUrl: string, apiToken: string): void {
   const payload = readJsonFile(configPath);
   const serverConfig = buildServerConfig(mcpUrl, apiToken);
 
   if (client === "vscode") {
     payload.servers = {
-      ...(payload.servers || {}),
+      ...readObjectProperty(payload, "servers"),
       tropass: {
         type: "stdio",
         ...serverConfig
@@ -145,7 +165,7 @@ function installServerConfig(client, configPath, mcpUrl, apiToken) {
     };
   } else {
     payload.mcpServers = {
-      ...(payload.mcpServers || {}),
+      ...readObjectProperty(payload, "mcpServers"),
       tropass: serverConfig
     };
   }
@@ -154,7 +174,7 @@ function installServerConfig(client, configPath, mcpUrl, apiToken) {
   fs.writeFileSync(configPath, `${JSON.stringify(payload, null, 2)}\n`);
 }
 
-function installInstructions(client, instructionPath) {
+function installInstructions(client: InstallClient, instructionPath: string): void {
   const instructionContent = buildInstructionContent(client);
   if (client === "vscode" || client === "generic") {
     upsertManagedInstructionBlock(instructionPath, instructionContent);
@@ -163,7 +183,7 @@ function installInstructions(client, instructionPath) {
   writeTextFile(instructionPath, instructionContent);
 }
 
-function upsertManagedInstructionBlock(filePath, content) {
+function upsertManagedInstructionBlock(filePath: string, content: string): void {
   const managedBlock = `${MANAGED_INSTRUCTIONS_BEGIN}\n${content.trim()}\n${MANAGED_INSTRUCTIONS_END}`;
 
   if (!fs.existsSync(filePath)) {
@@ -185,12 +205,27 @@ function upsertManagedInstructionBlock(filePath, content) {
   writeTextFile(filePath, `${existingContent.trimEnd()}\n\n${managedBlock}\n`);
 }
 
-function writeTextFile(filePath, content) {
+function writeTextFile(filePath: string, content: string): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, content.endsWith("\n") ? content : `${content}\n`);
 }
 
-async function promptForClient() {
+function readObjectProperty(payload: JsonObject, key: string): JsonObject {
+  const value = payload[key];
+  if (value === undefined) {
+    return {};
+  }
+  if (!isJsonObject(value)) {
+    throw new Error(`Config field '${key}' must be a JSON object.`);
+  }
+  return value;
+}
+
+function isJsonObject(value: unknown): value is JsonObject {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+async function promptForClient(): Promise<InstallClient> {
   const rl = createPromptInterface({
     input: process.stdin,
     output: process.stderr
@@ -200,7 +235,7 @@ async function promptForClient() {
     process.stderr.write("Choose MCP client:\n");
     process.stderr.write("  1. cursor\n");
     process.stderr.write("  2. vscode\n");
-    process.stderr.write("  3. claude-desktop\n");
+    process.stderr.write("  3. claude\n");
     process.stderr.write("  4. generic\n");
     const answer = (await rl.question("Client [cursor]: ")).trim();
     if (!answer || answer === "1") {
@@ -210,18 +245,21 @@ async function promptForClient() {
       return "vscode";
     }
     if (answer === "3") {
-      return "claude-desktop";
+      return "claude";
     }
     if (answer === "4") {
       return "generic";
     }
-    return answer;
+    if (isInstallClient(answer)) {
+      return answer;
+    }
+    throw new Error(`Unsupported client '${answer}'. Use one of: ${[...SUPPORTED_INSTALL_CLIENTS].join(", ")}.`);
   } finally {
     rl.close();
   }
 }
 
-async function promptForText(question, defaultValue) {
+async function promptForText(question: string, defaultValue?: string): Promise<string> {
   const rl = createPromptInterface({
     input: process.stdin,
     output: process.stderr
@@ -230,13 +268,13 @@ async function promptForText(question, defaultValue) {
   try {
     const suffix = defaultValue ? ` [${defaultValue}]` : "";
     const answer = (await rl.question(`${question}${suffix}: `)).trim();
-    return answer || defaultValue;
+    return answer || defaultValue || "";
   } finally {
     rl.close();
   }
 }
 
-async function promptForSecret(question) {
+async function promptForSecret(question: string): Promise<string> {
   if (!process.stdin.isTTY) {
     return promptForText(question);
   }
@@ -249,7 +287,7 @@ async function promptForSecret(question) {
   return await new Promise((resolve) => {
     let value = "";
 
-    const onData = (char) => {
+    const onData = (char: string): void => {
       if (char === "\u0003") {
         process.stderr.write("\n");
         process.exit(130);
