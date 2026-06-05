@@ -8,10 +8,8 @@
     "packages/*"
   ],
   "scripts": {
-    "smoke": "node scripts/smoke-check.mjs",
     "lint": "npm --workspace packages/mcp-proxy run lint",
-    "test": "npm --workspace packages/mcp-proxy run test",
-    "check": "npm --workspace packages/mcp-proxy run check && node --check scripts/smoke-check.mjs"
+    "test": "npm --workspace packages/mcp-proxy run test"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

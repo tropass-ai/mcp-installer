@@ -12,7 +12,6 @@ Tropass model gateway предоставляет доступные пользо
 - `adapters/` - готовые конфиги для Codex, Claude, Cursor, VS Code и generic MCP clients.
 - `instructions/tropass-mcp.md` - canonical vendor-neutral правила для точного и экономного использования Tropass MCP.
 - `docs/` - auth, tools behavior, примеры подключения и диагностика.
-- `scripts/smoke-check.mjs` - быстрая проверка токена и доступности MCP server.
 - `server.json` - черновая metadata для публикации в MCP Registry.
 
 ## Быстрый старт
@@ -59,15 +58,3 @@ URL: https://api.tropass.me/mcp
 Transport: Streamable HTTP
 Header: X-API-TOKEN: <your-api-token>
 ```
-
-## Проверка подключения
-
-Из локальной копии репозитория:
-
-```bash
-TROPASS_MCP_URL="https://api.tropass.me/mcp" \
-TROPASS_API_TOKEN="your-api-token" \
-node scripts/smoke-check.mjs
-```
-
-Ожидаемый результат: успешный `initialize`, затем список доступных пользователю MCP tools.
