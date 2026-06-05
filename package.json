@@ -1,0 +1,15 @@
+{
+  "name": "tropass-agent-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MCP connector kit for using Tropass ML models from AI agents and developer tools.",
+  "license": "MIT",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "smoke": "node scripts/smoke-check.mjs",
+    "check": "node --check packages/mcp-proxy/bin/tropass-mcp-proxy.js && node --check scripts/smoke-check.mjs"
+  }
+}
+

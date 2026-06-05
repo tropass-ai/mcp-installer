@@ -1,0 +1,20 @@
+{
+  "name": "@tropass/mcp-proxy",
+  "version": "0.1.0",
+  "description": "stdio MCP proxy for connecting agents to the Tropass remote MCP gateway.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "tropass-mcp-proxy": "./bin/tropass-mcp-proxy.js",
+    "tropass-mcp-install": "./bin/tropass-mcp-proxy.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "bin/"
+  ],
+  "scripts": {
+    "check": "node --check bin/tropass-mcp-proxy.js"
+  }
+}
