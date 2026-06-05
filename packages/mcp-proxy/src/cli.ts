@@ -65,6 +65,10 @@ function createInstallCommand(commandName: string): Command {
     .option("--project <dir>", "project/workspace directory for project-local configs")
     .option("-y, --yes", "accept defaults for non-secret prompts")
     .action(async (client: string | undefined, options: RawInstallOptions) => {
-      await runInstall({ ...options, client });
+      const rawOptions: RawInstallOptions = { ...options };
+      if (client !== undefined) {
+        rawOptions.client = client;
+      }
+      await runInstall(rawOptions);
     });
 }

@@ -60,14 +60,25 @@ export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult 
 }
 
 function normalizeInstallOptions(options: RawInstallOptions): InstallOptions {
-  return {
-    client: options.client,
-    configPath: options.config ?? options.configPath,
+  const configPath = options.config ?? options.configPath;
+  const apiToken = options.token ?? options.apiToken ?? process.env.TROPASS_API_TOKEN;
+  const normalizedOptions: InstallOptions = {
     mcpUrl: options.url ?? options.mcpUrl ?? process.env.TROPASS_MCP_URL ?? DEFAULT_MCP_URL,
-    apiToken: options.token ?? options.apiToken ?? process.env.TROPASS_API_TOKEN,
     projectDir: options.project ?? options.projectDir ?? process.cwd(),
     yes: Boolean(options.yes)
   };
+
+  if (options.client !== undefined) {
+    normalizedOptions.client = options.client;
+  }
+  if (configPath !== undefined) {
+    normalizedOptions.configPath = configPath;
+  }
+  if (apiToken !== undefined) {
+    normalizedOptions.apiToken = apiToken;
+  }
+
+  return normalizedOptions;
 }
 
 function validateInstallOptions(options: InstallOptions): ValidatedInstallOptions {
@@ -310,4 +321,3 @@ async function promptForSecret(question: string): Promise<string> {
     process.stdin.on("data", onData);
   });
 }
-

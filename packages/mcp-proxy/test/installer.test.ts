@@ -10,7 +10,7 @@ import { MANAGED_INSTRUCTIONS_BEGIN, MANAGED_INSTRUCTIONS_END } from "../src/ins
 const TEST_MCP_URL = "https://api.tropass.me/mcp";
 const TEST_API_TOKEN = "test-token";
 
-let tempDirs = [];
+let tempDirs: string[] = [];
 
 afterEach(() => {
   for (const tempDir of tempDirs) {
@@ -120,18 +120,17 @@ Keep this too.
   });
 });
 
-function createTempDir() {
+function createTempDir(): string {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "tropass-mcp-proxy-"));
   tempDirs.push(tempDir);
   return tempDir;
 }
 
-function writeJson(filePath, payload) {
+function writeJson(filePath: string, payload: unknown): void {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
 }
 
-function readJson(filePath) {
+function readJson(filePath: string) {
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
 }
-
