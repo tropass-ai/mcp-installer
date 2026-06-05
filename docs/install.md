@@ -31,10 +31,10 @@ VS Code workspace config:
 npx -y @tropass/mcp-proxy install vscode
 ```
 
-Claude Desktop global config:
+Claude global config:
 
 ```bash
-npx -y @tropass/mcp-proxy install claude-desktop
+npx -y @tropass/mcp-proxy install claude
 ```
 
 Generic `mcp.json` в текущей директории:
@@ -62,7 +62,7 @@ npx -y @tropass/mcp-proxy install cursor \
 - VS Code:
   - config: `.vscode/mcp.json` в текущем workspace;
   - instructions: `.github/copilot-instructions.md`;
-- Claude Desktop:
+- Claude:
   - config on macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`;
   - config on Windows: `%APPDATA%\Claude\claude_desktop_config.json`;
   - config on Linux: `~/.config/Claude/claude_desktop_config.json`;

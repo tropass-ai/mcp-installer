@@ -46,8 +46,8 @@ npx -y @tropass/mcp-proxy install
 
 ## Vendor-specific files
 
-- `adapters/codex-plugin` - Codex plugin с MCP config и skill.
-- `adapters/claude-desktop` - пример `claude_desktop_config.json` и инструкции.
+- `adapters/codex` - Codex plugin с MCP config и skill.
+- `adapters/claude` - пример `claude_desktop_config.json` и инструкции.
 - `adapters/cursor` - пример `.cursor/mcp.json` и `.cursor/rules/tropass-mcp.mdc`.
 - `adapters/vscode` - пример `.vscode/mcp.json` и `.github/copilot-instructions.md`.
 - `adapters/generic` - vendor-neutral инструкции.
