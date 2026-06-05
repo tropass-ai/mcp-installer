@@ -10,7 +10,7 @@ Tropass model gateway предоставляет доступные пользо
 
 - `packages/mcp-proxy` - локальный MCP `stdio` proxy для клиентов, которые не умеют напрямую подключаться к remote MCP server или задавать custom headers.
 - `adapters/` - готовые конфиги для Codex, Claude Desktop, Cursor, VS Code и generic MCP clients.
-- `adapters/generic/instructions.md` - vendor-neutral правила для точного и экономного использования Tropass MCP.
+- `instructions/tropass-mcp.md` - canonical vendor-neutral правила для точного и экономного использования Tropass MCP.
 - `docs/` - auth, tools behavior, примеры подключения и диагностика.
 - `scripts/smoke-check.mjs` - быстрая проверка токена и доступности MCP server.
 - `server.json` - черновая metadata для публикации в MCP Registry.
@@ -23,7 +23,7 @@ Tropass model gateway предоставляет доступные пользо
 npx -y @tropass/mcp-proxy install
 ```
 
-CLI попросит выбрать MCP client, вставить Tropass API token и сохранит конфигурацию в нужный файл.
+CLI попросит выбрать MCP client, вставить Tropass API token и сохранит конфигурацию и инструкции для агента в нужные файлы.
 
 Быстрые варианты:
 

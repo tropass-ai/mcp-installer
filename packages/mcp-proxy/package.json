@@ -12,9 +12,10 @@
     "node": ">=20"
   },
   "files": [
-    "bin/"
+    "bin/",
+    "src/"
   ],
   "scripts": {
-    "check": "node --check bin/tropass-mcp-proxy.js"
+    "check": "node --check bin/tropass-mcp-proxy.js && node --check src/*.js"
   }
 }

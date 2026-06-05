@@ -4,7 +4,7 @@
 
 ## Generic stdio config
 
-Рекомендуемый способ установки:
+Рекомендуемый способ установки config + instructions:
 
 ```bash
 npx -y @tropass/mcp-proxy install
@@ -47,7 +47,7 @@ npx -y @tropass/mcp-proxy install
 ## Vendor-specific files
 
 - `adapters/codex-plugin` - Codex plugin с MCP config и skill.
-- `adapters/claude-desktop` - пример `claude_desktop_config.json`.
-- `adapters/cursor` - пример `.cursor/mcp.json`.
-- `adapters/vscode` - пример `.vscode/mcp.json`.
+- `adapters/claude-desktop` - пример `claude_desktop_config.json` и инструкции.
+- `adapters/cursor` - пример `.cursor/mcp.json` и `.cursor/rules/tropass-mcp.mdc`.
+- `adapters/vscode` - пример `.vscode/mcp.json` и `.github/copilot-instructions.md`.
 - `adapters/generic` - vendor-neutral инструкции.
