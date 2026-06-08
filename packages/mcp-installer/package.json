@@ -4,6 +4,18 @@
   "description": "Installer for configuring agents to use the Tropass remote MCP gateway.",
   "license": "MIT",
   "type": "module",
+  "keywords": [
+    "tropass",
+    "mcp",
+    "model-context-protocol",
+    "ai-agents",
+    "codex",
+    "cursor",
+    "vscode",
+    "claude",
+    "installer",
+    "ml-models"
+  ],
   "bin": {
     "tropass-mcp-install": "./dist/bin/tropass-mcp-install.js"
   },
@@ -18,7 +30,8 @@
     "node": ">=20"
   },
   "files": [
-    "dist/"
+    "dist/",
+    "README.md"
   ],
   "scripts": {
     "build": "node -e \"const fs = require('node:fs'); fs.rmSync('dist', { recursive: true, force: true }); fs.mkdirSync('dist/instructions', { recursive: true }); fs.copyFileSync('instructions/tropass-mcp.md', 'dist/instructions/tropass-mcp.md')\" && tsc -p tsconfig.build.json",
