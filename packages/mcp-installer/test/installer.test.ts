@@ -9,10 +9,14 @@ import { MANAGED_INSTRUCTIONS_BEGIN, MANAGED_INSTRUCTIONS_END } from "../src/ins
 
 const TEST_MCP_URL = "https://api.tropass.me/mcp";
 const TEST_API_TOKEN = "test-token";
+const ORIGINAL_HOME = process.env.HOME;
+const ORIGINAL_USERPROFILE = process.env.USERPROFILE;
 
 let tempDirs: string[] = [];
 
 afterEach(() => {
+  process.env.HOME = ORIGINAL_HOME;
+  process.env.USERPROFILE = ORIGINAL_USERPROFILE;
   for (const tempDir of tempDirs) {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
@@ -20,16 +24,11 @@ afterEach(() => {
 });
 
 describe("installTropassMcp", () => {
-  it("writes Codex MCP config and project skill without removing existing MCP servers", () => {
+  it("writes Codex project config and project skill without removing existing config", () => {
     const projectDir = createTempDir();
-    const configPath = path.join(projectDir, ".mcp.json");
-    writeJson(configPath, {
-      mcpServers: {
-        existing: {
-          url: "https://example.test/mcp"
-        }
-      }
-    });
+    const configPath = path.join(projectDir, ".codex", "config.toml");
+    fs.mkdirSync(path.dirname(configPath), { recursive: true });
+    fs.writeFileSync(configPath, "model = \"gpt-5.5\"\n");
 
     const result = installTropassMcp({
       client: "codex",
@@ -39,20 +38,38 @@ describe("installTropassMcp", () => {
     });
 
     expect(result.configPath).toBe(configPath);
+    expect(result.scope).toBe("project");
     expect(result.instructionPath).toBe(path.join(projectDir, ".codex", "skills", "tropass-gateway", "SKILL.md"));
 
-    const config = readJson(configPath);
-    expect(config.mcpServers.existing.url).toBe("https://example.test/mcp");
-    expect(config.mcpServers.tropass).toEqual({
-      url: TEST_MCP_URL,
-      headers: {
-        "X-API-TOKEN": TEST_API_TOKEN
-      }
-    });
+    const config = fs.readFileSync(configPath, "utf8");
+    expect(config).toContain("model = \"gpt-5.5\"");
+    expect(config).toContain("# BEGIN TROPASS MCP CONFIG");
+    expect(config).toContain("[mcp_servers.tropass]");
+    expect(config).toContain(`url = "${TEST_MCP_URL}"`);
+    expect(config).toContain(`headers = { "X-API-TOKEN" = "${TEST_API_TOKEN}" }`);
 
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
     expect(instructions).toContain("name: tropass-gateway");
     expect(instructions).toContain("Tropass Gateway MCP");
+  });
+
+  it("writes Codex global config and global skill", () => {
+    const homeDir = createTempDir();
+    process.env.HOME = homeDir;
+    process.env.USERPROFILE = homeDir;
+
+    const result = installTropassMcp({
+      client: "codex",
+      scope: "global",
+      mcpUrl: TEST_MCP_URL,
+      apiToken: TEST_API_TOKEN
+    });
+
+    expect(result.scope).toBe("global");
+    expect(result.configPath).toBe(path.join(homeDir, ".codex", "config.toml"));
+    expect(result.instructionPath).toBe(path.join(homeDir, ".codex", "skills", "tropass-gateway", "SKILL.md"));
+    expect(fs.readFileSync(result.configPath, "utf8")).toContain("[mcp_servers.tropass]");
+    expect(fs.readFileSync(result.instructionPath, "utf8")).toContain("Tropass Gateway MCP");
   });
 
   it("writes Cursor config and rule without removing existing MCP servers", () => {

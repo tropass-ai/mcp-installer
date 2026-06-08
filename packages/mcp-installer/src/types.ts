@@ -1,4 +1,5 @@
 export type InstallClient = "codex" | "cursor" | "vscode" | "claude" | "generic";
+export type InstallScope = "project" | "global";
 
 export type RawInstallOptions = {
   client?: string;
@@ -10,6 +11,9 @@ export type RawInstallOptions = {
   apiToken?: string;
   project?: string;
   projectDir?: string;
+  scope?: string;
+  global?: boolean;
+  local?: boolean;
   yes?: boolean;
 };
 
@@ -19,16 +23,19 @@ export type InstallOptions = {
   mcpUrl: string;
   apiToken?: string;
   projectDir: string;
+  scope?: string;
   yes: boolean;
 };
 
-export type ValidatedInstallOptions = Omit<InstallOptions, "client" | "apiToken"> & {
+export type ValidatedInstallOptions = Omit<InstallOptions, "client" | "apiToken" | "scope"> & {
   client: InstallClient;
   apiToken: string;
+  scope: InstallScope;
 };
 
 export type InstallResult = {
   client: InstallClient;
+  scope: InstallScope;
   configPath: string;
   instructionPath: string;
 };

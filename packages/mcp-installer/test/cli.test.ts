@@ -51,6 +51,8 @@ describe("main", () => {
       "token-123",
       "--project",
       "/workspace/project",
+      "--scope",
+      "global",
       "--yes"
     ];
     const { main } = await import("../src/cli.js");
@@ -63,6 +65,29 @@ describe("main", () => {
       url: "https://example.test/mcp",
       token: "token-123",
       project: "/workspace/project",
+      scope: "global",
+      yes: true
+    });
+  });
+
+  it("routes global and local aliases to installer", async () => {
+    process.argv = [
+      "node",
+      "/usr/local/bin/tropass-mcp-install",
+      "codex",
+      "--token",
+      "token-123",
+      "--global",
+      "--yes"
+    ];
+    const { main } = await import("../src/cli.js");
+
+    await main();
+
+    expect(runInstall).toHaveBeenCalledWith({
+      client: "codex",
+      token: "token-123",
+      global: true,
       yes: true
     });
   });
@@ -97,6 +122,7 @@ describe("main", () => {
     expect(stdout).toContain("Usage: tropass-mcp-install [options] [client]");
     expect(stdout).toContain("Install direct remote Tropass MCP config and agent instructions.");
     expect(stdout).toContain("codex, cursor, vscode, claude, or generic");
+    expect(stdout).toContain("install scope: project or global");
     expect(runInstall).not.toHaveBeenCalled();
   });
 });

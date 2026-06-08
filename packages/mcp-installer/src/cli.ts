@@ -32,6 +32,9 @@ function createInstallCommand(commandName: string): Command {
     .option("--config <path>", "explicit path to the MCP config file")
     .option("--url <url>", "Tropass MCP endpoint URL")
     .option("--token <token>", "Tropass API token")
+    .option("--scope <scope>", "install scope: project or global")
+    .option("--global", "install into global user config")
+    .option("--local", "install into project/workspace config")
     .option("--project <dir>", "project/workspace directory for project-local configs")
     .option("-y, --yes", "accept defaults for non-secret prompts")
     .action(async (client: string | undefined, options: RawInstallOptions) => {

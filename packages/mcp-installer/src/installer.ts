@@ -5,11 +5,23 @@ import process from "node:process";
 
 import { DEFAULT_MCP_URL, DEFAULT_TOKEN_HEADER, SUPPORTED_INSTALL_CLIENTS } from "./constants.js";
 import { buildInstructionContent, MANAGED_INSTRUCTIONS_BEGIN, MANAGED_INSTRUCTIONS_END } from "./instructions.js";
-import { expandHome, resolveClaudeDesktopConfigPath } from "./path-utils.js";
+import {
+  expandHome,
+  resolveCodexConfigPath,
+  resolveCodexSkillsPath,
+  resolveClaudeDesktopConfigPath,
+  resolveCursorConfigPath,
+  resolveCursorRulesPath,
+  resolveGenericConfigPath,
+  resolveGenericInstructionPath,
+  resolveVSCodeUserConfigPath,
+  resolveVSCodeUserInstructionPath
+} from "./path-utils.js";
 import type {
   InstallClient,
   InstallOptions,
   InstallResult,
+  InstallScope,
   JsonObject,
   RawInstallOptions,
   ValidatedInstallOptions
@@ -20,20 +32,30 @@ type ServerConfig = {
   headers: Record<string, string>;
 };
 
+const MANAGED_CODEX_CONFIG_BEGIN = "# BEGIN TROPASS MCP CONFIG";
+const MANAGED_CODEX_CONFIG_END = "# END TROPASS MCP CONFIG";
+
 export async function runInstall(rawOptions: RawInstallOptions = {}): Promise<void> {
   const options = normalizeInstallOptions(rawOptions);
-  const client = options.client ?? await promptForClient();
+  const client = options.client !== undefined ? validateInstallClient(options.client) : await promptForClient();
+  const scope = options.scope !== undefined
+    ? validateInstallScope(options.scope)
+    : options.yes
+      ? resolveDefaultScope(client)
+      : await promptForScope(client);
   const mcpUrl = options.yes ? options.mcpUrl : await promptForText("Tropass MCP URL", options.mcpUrl);
   const apiToken = options.apiToken ?? await promptForSecret("Tropass API token");
 
   const result = installTropassMcp({
     ...options,
     client,
+    scope,
     mcpUrl,
     apiToken
   });
 
   process.stderr.write(`Installed Tropass MCP for ${result.client}.\n`);
+  process.stderr.write(`Scope: ${result.scope}\n`);
   process.stderr.write(`Config file: ${result.configPath}\n`);
   process.stderr.write(`Instructions file: ${result.instructionPath}\n`);
   process.stderr.write("Restart or reload your MCP client to pick up the new server.\n");
@@ -46,10 +68,11 @@ export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult 
   installServerConfig(options.client, configPath, options.mcpUrl, options.apiToken);
 
   const instructionPath = resolveInstructionPath(options.client, options, configPath);
-  installInstructions(options.client, instructionPath);
+  installInstructions(options.client, options.scope, instructionPath);
 
   return {
     client: options.client,
+    scope: options.scope,
     configPath,
     instructionPath
   };
@@ -58,6 +81,7 @@ export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult 
 function normalizeInstallOptions(options: RawInstallOptions): InstallOptions {
   const configPath = options.config ?? options.configPath;
   const apiToken = options.token ?? options.apiToken ?? process.env.TROPASS_API_TOKEN;
+  const scope = normalizeScopeOption(options);
   const normalizedOptions: InstallOptions = {
     mcpUrl: options.url ?? options.mcpUrl ?? process.env.TROPASS_MCP_URL ?? DEFAULT_MCP_URL,
     projectDir: options.project ?? options.projectDir ?? process.cwd(),
@@ -73,25 +97,62 @@ function normalizeInstallOptions(options: RawInstallOptions): InstallOptions {
   if (apiToken !== undefined) {
     normalizedOptions.apiToken = apiToken;
   }
+  if (scope !== undefined) {
+    normalizedOptions.scope = scope;
+  }
 
   return normalizedOptions;
 }
 
 function validateInstallOptions(options: InstallOptions): ValidatedInstallOptions {
-  if (!isInstallClient(options.client)) {
-    throw new Error(`Unsupported client '${options.client}'. Use one of: ${[...SUPPORTED_INSTALL_CLIENTS].join(", ")}.`);
-  }
+  const client = validateInstallClient(options.client);
   if (!options.apiToken) {
     throw new Error("Tropass API token is required.");
   }
   if (!options.mcpUrl) {
     throw new Error("Tropass MCP URL is required.");
   }
+  const scope = validateInstallScope(options.scope ?? resolveDefaultScope(client));
   return {
     ...options,
-    client: options.client,
-    apiToken: options.apiToken
+    client,
+    apiToken: options.apiToken,
+    scope
   };
+}
+
+function validateInstallClient(value: unknown): InstallClient {
+  if (isInstallClient(value)) {
+    return value;
+  }
+  throw new Error(`Unsupported client '${value}'. Use one of: ${[...SUPPORTED_INSTALL_CLIENTS].join(", ")}.`);
+}
+
+function normalizeScopeOption(options: RawInstallOptions): string | undefined {
+  if (options.global && options.local) {
+    throw new Error("Use only one install scope: --global or --local.");
+  }
+  if (options.global) {
+    return "global";
+  }
+  if (options.local) {
+    return "project";
+  }
+  return options.scope;
+}
+
+function resolveDefaultScope(client: InstallClient): InstallScope {
+  return client === "claude" ? "global" : "project";
+}
+
+function validateInstallScope(value: string): InstallScope {
+  if (value === "project" || value === "global") {
+    return value;
+  }
+  if (value === "local") {
+    return "project";
+  }
+  throw new Error(`Unsupported install scope '${value}'. Use one of: project, global.`);
 }
 
 function isInstallClient(value: unknown): value is InstallClient {
@@ -105,16 +166,19 @@ function resolveConfigPath(client: InstallClient, options: ValidatedInstallOptio
 
   const projectDir = path.resolve(expandHome(options.projectDir));
   if (client === "codex") {
-    return path.join(projectDir, ".mcp.json");
+    return options.scope === "global" ? resolveCodexConfigPath() : path.join(projectDir, ".codex", "config.toml");
   }
   if (client === "cursor") {
-    return path.join(projectDir, ".cursor", "mcp.json");
+    return options.scope === "global" ? resolveCursorConfigPath() : path.join(projectDir, ".cursor", "mcp.json");
   }
   if (client === "vscode") {
-    return path.join(projectDir, ".vscode", "mcp.json");
+    return options.scope === "global" ? resolveVSCodeUserConfigPath() : path.join(projectDir, ".vscode", "mcp.json");
+  }
+  if (client === "claude") {
+    return options.scope === "global" ? resolveClaudeDesktopConfigPath() : path.join(projectDir, ".mcp.json");
   }
   if (client === "generic") {
-    return path.join(projectDir, "mcp.json");
+    return options.scope === "global" ? resolveGenericConfigPath() : path.join(projectDir, "mcp.json");
   }
   return resolveClaudeDesktopConfigPath();
 }
@@ -122,16 +186,23 @@ function resolveConfigPath(client: InstallClient, options: ValidatedInstallOptio
 function resolveInstructionPath(client: InstallClient, options: ValidatedInstallOptions, configPath: string): string {
   const projectDir = path.resolve(expandHome(options.projectDir));
   if (client === "codex") {
-    return path.join(projectDir, ".codex", "skills", "tropass-gateway", "SKILL.md");
+    const skillsPath = options.scope === "global" ? resolveCodexSkillsPath() : path.join(projectDir, ".codex", "skills");
+    return path.join(skillsPath, "tropass-gateway", "SKILL.md");
   }
   if (client === "cursor") {
-    return path.join(projectDir, ".cursor", "rules", "tropass-mcp.mdc");
+    const rulesPath = options.scope === "global" ? resolveCursorRulesPath() : path.join(projectDir, ".cursor", "rules");
+    return path.join(rulesPath, "tropass-mcp.mdc");
   }
   if (client === "vscode") {
-    return path.join(projectDir, ".github", "copilot-instructions.md");
+    return options.scope === "global"
+      ? resolveVSCodeUserInstructionPath()
+      : path.join(projectDir, ".github", "copilot-instructions.md");
+  }
+  if (client === "claude" && options.scope === "project") {
+    return path.join(projectDir, "CLAUDE.md");
   }
   if (client === "generic") {
-    return path.join(projectDir, "AGENTS.md");
+    return options.scope === "global" ? resolveGenericInstructionPath() : path.join(projectDir, "AGENTS.md");
   }
   return path.join(path.dirname(configPath), "tropass-mcp-instructions.md");
 }
@@ -163,6 +234,11 @@ function buildServerConfig(mcpUrl: string, apiToken: string): ServerConfig {
 }
 
 function installServerConfig(client: InstallClient, configPath: string, mcpUrl: string, apiToken: string): void {
+  if (client === "codex") {
+    installCodexServerConfig(configPath, mcpUrl, apiToken);
+    return;
+  }
+
   const payload = readJsonFile(configPath);
   const serverConfig = buildServerConfig(mcpUrl, apiToken);
 
@@ -185,9 +261,45 @@ function installServerConfig(client: InstallClient, configPath: string, mcpUrl: 
   fs.writeFileSync(configPath, `${JSON.stringify(payload, null, 2)}\n`);
 }
 
-function installInstructions(client: InstallClient, instructionPath: string): void {
+function installCodexServerConfig(configPath: string, mcpUrl: string, apiToken: string): void {
+  const managedBlock = [
+    MANAGED_CODEX_CONFIG_BEGIN,
+    "[mcp_servers.tropass]",
+    `url = ${stringifyTomlValue(mcpUrl)}`,
+    `headers = { ${stringifyTomlKey(DEFAULT_TOKEN_HEADER)} = ${stringifyTomlValue(apiToken)} }`,
+    MANAGED_CODEX_CONFIG_END
+  ].join("\n");
+
+  if (!fs.existsSync(configPath)) {
+    writeTextFile(configPath, managedBlock);
+    return;
+  }
+
+  const existingContent = fs.readFileSync(configPath, "utf8");
+  const startIndex = existingContent.indexOf(MANAGED_CODEX_CONFIG_BEGIN);
+  const endIndex = existingContent.indexOf(MANAGED_CODEX_CONFIG_END);
+
+  if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
+    const before = existingContent.slice(0, startIndex).trimEnd();
+    const after = existingContent.slice(endIndex + MANAGED_CODEX_CONFIG_END.length).trimStart();
+    writeTextFile(configPath, [before, managedBlock, after].filter(Boolean).join("\n\n"));
+    return;
+  }
+
+  writeTextFile(configPath, `${existingContent.trimEnd()}\n\n${managedBlock}\n`);
+}
+
+function stringifyTomlKey(value: string): string {
+  return JSON.stringify(value);
+}
+
+function stringifyTomlValue(value: string): string {
+  return JSON.stringify(value);
+}
+
+function installInstructions(client: InstallClient, scope: InstallScope, instructionPath: string): void {
   const instructionContent = buildInstructionContent(client);
-  if (client === "vscode" || client === "generic") {
+  if (client === "vscode" || client === "generic" || (client === "claude" && scope === "project")) {
     upsertManagedInstructionBlock(instructionPath, instructionContent);
     return;
   }
@@ -269,6 +381,31 @@ async function promptForClient(): Promise<InstallClient> {
       return answer;
     }
     throw new Error(`Unsupported client '${answer}'. Use one of: ${[...SUPPORTED_INSTALL_CLIENTS].join(", ")}.`);
+  } finally {
+    rl.close();
+  }
+}
+
+async function promptForScope(client: InstallClient): Promise<InstallScope> {
+  const defaultScope = resolveDefaultScope(client);
+  const alternativeScope = defaultScope === "project" ? "global" : "project";
+  const rl = createPromptInterface({
+    input: process.stdin,
+    output: process.stderr
+  });
+
+  try {
+    process.stderr.write("Choose install scope:\n");
+    process.stderr.write(`  1. ${defaultScope}\n`);
+    process.stderr.write(`  2. ${alternativeScope}\n`);
+    const answer = (await rl.question(`Scope [${defaultScope}]: `)).trim();
+    if (!answer || answer === "1") {
+      return defaultScope;
+    }
+    if (answer === "2") {
+      return alternativeScope;
+    }
+    return validateInstallScope(answer);
   } finally {
     rl.close();
   }

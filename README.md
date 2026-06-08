@@ -10,7 +10,7 @@ Tropass model gateway предоставляет доступные пользо
 
 - `packages/mcp-installer` - CLI installer, который настраивает direct remote MCP config и инструкции под выбранного агента.
 - `adapters/` - готовые конфиги для Codex, Claude, Cursor, VS Code и generic MCP clients.
-- `instructions/tropass-mcp.md` - canonical vendor-neutral правила для точного и экономного использования Tropass MCP.
+- `packages/mcp-installer/instructions/tropass-mcp.md` - canonical vendor-neutral правила для точного и экономного использования Tropass MCP.
 - `docs/` - auth, tools behavior, примеры подключения и диагностика.
 
 ## Быстрый старт
@@ -21,7 +21,7 @@ Tropass model gateway предоставляет доступные пользо
 npx -y @tropass/mcp-installer
 ```
 
-CLI попросит выбрать MCP client, вставить Tropass API token и сохранит конфигурацию и инструкции для агента в нужные файлы.
+CLI попросит выбрать MCP client, scope установки (`project` или `global`), вставить Tropass API token и сохранит конфигурацию и инструкции для агента в нужные файлы.
 
 Быстрые варианты:
 
