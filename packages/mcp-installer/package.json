@@ -4,6 +4,11 @@
   "description": "Installer for configuring agents to use the Tropass remote MCP gateway.",
   "license": "MIT",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tropass-ai/tropass-agent-kit.git",
+    "directory": "packages/mcp-installer"
+  },
   "keywords": [
     "tropass",
     "mcp",
