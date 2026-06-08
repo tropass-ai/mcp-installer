@@ -2,24 +2,23 @@
 
 `tropass-agent-kit` - open-source MCP connector kit для использования ML-моделей Tropass из AI-агентов, IDE и developer tools.
 
-Репозиторий содержит документацию, локальный `stdio` proxy, примеры конфигурации и инструкции для агентов, которые подключаются к Tropass model gateway через MCP.
+Репозиторий содержит installer, документацию, примеры конфигурации и инструкции для агентов, которые подключаются к Tropass model gateway через MCP.
 
 Tropass model gateway предоставляет доступные пользователю ML-модели как MCP tools: с учетом прав доступа, JSON Schema валидацией входных данных, структурированными ответами моделей и поддержкой файловых входов через существующие Tropass/S3 file URLs.
 
 ## Что внутри
 
-- `packages/mcp-proxy` - локальный MCP `stdio` proxy для клиентов, которые не умеют напрямую подключаться к remote MCP server или задавать custom headers.
+- `packages/mcp-installer` - CLI installer, который настраивает direct remote MCP config и инструкции под выбранного агента.
 - `adapters/` - готовые конфиги для Codex, Claude, Cursor, VS Code и generic MCP clients.
 - `instructions/tropass-mcp.md` - canonical vendor-neutral правила для точного и экономного использования Tropass MCP.
 - `docs/` - auth, tools behavior, примеры подключения и диагностика.
-- `server.json` - черновая metadata для публикации в MCP Registry.
 
 ## Быстрый старт
 
 Для большинства агентов установите config одной командой:
 
 ```bash
-npx -y @tropass/mcp-proxy install
+npx -y @tropass/mcp-installer
 ```
 
 CLI попросит выбрать MCP client, вставить Tropass API token и сохранит конфигурацию и инструкции для агента в нужные файлы.
@@ -27,22 +26,21 @@ CLI попросит выбрать MCP client, вставить Tropass API tok
 Быстрые варианты:
 
 ```bash
-npx -y @tropass/mcp-proxy install cursor
-npx -y @tropass/mcp-proxy install vscode
-npx -y @tropass/mcp-proxy install claude
+npx -y @tropass/mcp-installer codex
+npx -y @tropass/mcp-installer cursor
+npx -y @tropass/mcp-installer vscode
+npx -y @tropass/mcp-installer claude
 ```
 
-Ручной config для MCP-клиентов выглядит так:
+Ручной direct remote config для MCP-клиентов выглядит так:
 
 ```json
 {
   "mcpServers": {
     "tropass": {
-      "command": "npx",
-      "args": ["-y", "@tropass/mcp-proxy"],
-      "env": {
-        "TROPASS_MCP_URL": "https://api.tropass.me/mcp",
-        "TROPASS_API_TOKEN": "your-api-token"
+      "url": "https://api.tropass.me/mcp",
+      "headers": {
+        "X-API-TOKEN": "your-api-token"
       }
     }
   }
@@ -51,10 +49,4 @@ npx -y @tropass/mcp-proxy install claude
 
 Подробнее: [docs/install.md](docs/install.md).
 
-Если агент умеет remote MCP with custom headers, можно подключаться напрямую:
-
-```text
-URL: https://api.tropass.me/mcp
-Transport: Streamable HTTP
-Header: X-API-TOKEN: <your-api-token>
-```
+Installer считает direct remote MCP основным способом подключения.

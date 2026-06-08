@@ -1,4 +1,5 @@
-export const MANAGED_INSTRUCTIONS_BEGIN = "<!-- BEGIN TROPASS MCP INSTRUCTIONS -->";
+export const MANAGED_INSTRUCTIONS_BEGIN =
+  "<!-- BEGIN TROPASS MCP INSTRUCTIONS -->";
 export const MANAGED_INSTRUCTIONS_END = "<!-- END TROPASS MCP INSTRUCTIONS -->";
 
 export const TROPASS_MCP_INSTRUCTIONS = `# Tropass MCP Instructions
@@ -34,9 +35,21 @@ Use the Tropass MCP server to call ML models.
 - Do not retry rate-limit errors in a loop.
 `;
 
-import type { InstallClient } from "./types.js";
+import type {InstallClient} from "./types.js";
+
+const CODEX_SKILL_BODY = TROPASS_MCP_INSTRUCTIONS.replace("# Tropass MCP Instructions\n\n", "");
 
 export function buildInstructionContent(client: InstallClient): string {
+  if (client === "codex") {
+    return `---
+name: tropass-gateway
+description: Use when calling Tropass ML models through the Tropass MCP server, selecting models, preparing model inputs, handling file URL arguments, or interpreting model results.
+---
+
+# Tropass Gateway MCP
+
+${CODEX_SKILL_BODY}`;
+  }
   if (client === "cursor") {
     return `---
 description: Use Tropass MCP for ML model calls

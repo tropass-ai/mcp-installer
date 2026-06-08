@@ -5,14 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RawInstallOptions } from "../src/types.js";
 
 const runInstall = vi.fn<(options?: RawInstallOptions) => Promise<void>>();
-const runProxy = vi.fn<() => Promise<void>>();
 
 vi.mock("../src/installer.js", () => ({
   runInstall
-}));
-
-vi.mock("../src/proxy.js", () => ({
-  runProxy
 }));
 
 describe("main", () => {
@@ -22,7 +17,7 @@ describe("main", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
-    process.argv = ["node", "/usr/local/bin/tropass-mcp-proxy"];
+    process.argv = ["node", "/usr/local/bin/tropass-mcp-install"];
     stdout = "";
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => {
       stdout += chunk.toString();
@@ -35,20 +30,18 @@ describe("main", () => {
     vi.restoreAllMocks();
   });
 
-  it("starts proxy runtime when no arguments are passed", async () => {
+  it("starts interactive installer when no arguments are passed", async () => {
     const { main } = await import("../src/cli.js");
 
     await main();
 
-    expect(runProxy).toHaveBeenCalledOnce();
-    expect(runInstall).not.toHaveBeenCalled();
+    expect(runInstall).toHaveBeenCalledWith({});
   });
 
-  it("routes install subcommand options to installer", async () => {
+  it("routes options to installer", async () => {
     process.argv = [
       "node",
-      "/usr/local/bin/tropass-mcp-proxy",
-      "install",
+      "/usr/local/bin/tropass-mcp-install",
       "cursor",
       "--config",
       "/tmp/mcp.json",
@@ -72,13 +65,13 @@ describe("main", () => {
       project: "/workspace/project",
       yes: true
     });
-    expect(runProxy).not.toHaveBeenCalled();
   });
 
-  it("routes tropass-mcp-install executable alias to installer", async () => {
+  it("accepts install subcommand as a compatibility alias", async () => {
     process.argv = [
       "node",
       "/usr/local/bin/tropass-mcp-install",
+      "install",
       "vscode",
       "--token",
       "token-123",
@@ -93,18 +86,17 @@ describe("main", () => {
       token: "token-123",
       yes: true
     });
-    expect(runProxy).not.toHaveBeenCalled();
   });
 
-  it("prints root help without starting proxy or installer", async () => {
-    process.argv = ["node", "/usr/local/bin/tropass-mcp-proxy", "--help"];
+  it("prints installer help", async () => {
+    process.argv = ["node", "/usr/local/bin/tropass-mcp-install", "--help"];
     const { main } = await import("../src/cli.js");
 
     await main();
 
-    expect(stdout).toContain("Usage: tropass-mcp-proxy [install] [options]");
-    expect(stdout).toContain("Run without arguments to start the stdio MCP proxy runtime.");
+    expect(stdout).toContain("Usage: tropass-mcp-install [options] [client]");
+    expect(stdout).toContain("Install direct remote Tropass MCP config and agent instructions.");
+    expect(stdout).toContain("codex, cursor, vscode, claude, or generic");
     expect(runInstall).not.toHaveBeenCalled();
-    expect(runProxy).not.toHaveBeenCalled();
   });
 });

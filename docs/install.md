@@ -3,7 +3,7 @@
 Пользователь может установить Tropass MCP config и инструкции для агента одной командой:
 
 ```bash
-npx -y @tropass/mcp-proxy install
+npx -y @tropass/mcp-installer
 ```
 
 CLI спросит:
@@ -19,34 +19,40 @@ CLI спросит:
 
 ## Быстрые команды
 
+Codex project config:
+
+```bash
+npx -y @tropass/mcp-installer codex
+```
+
 Cursor project config:
 
 ```bash
-npx -y @tropass/mcp-proxy install cursor
+npx -y @tropass/mcp-installer cursor
 ```
 
 VS Code workspace config:
 
 ```bash
-npx -y @tropass/mcp-proxy install vscode
+npx -y @tropass/mcp-installer vscode
 ```
 
 Claude global config:
 
 ```bash
-npx -y @tropass/mcp-proxy install claude
+npx -y @tropass/mcp-installer claude
 ```
 
 Generic `mcp.json` в текущей директории:
 
 ```bash
-npx -y @tropass/mcp-proxy install generic
+npx -y @tropass/mcp-installer generic
 ```
 
 ## Non-interactive install
 
 ```bash
-npx -y @tropass/mcp-proxy install cursor \
+npx -y @tropass/mcp-installer cursor \
   --url "https://api.tropass.me/mcp" \
   --token "your-api-token" \
   --yes
@@ -56,6 +62,9 @@ npx -y @tropass/mcp-proxy install cursor \
 
 По умолчанию:
 
+- Codex:
+  - config: `.mcp.json` в текущем проекте;
+  - instructions: `.codex/skills/tropass-gateway/SKILL.md`;
 - Cursor:
   - config: `.cursor/mcp.json` в текущем проекте;
   - instructions: `.cursor/rules/tropass-mcp.mdc`;
@@ -76,5 +85,5 @@ npx -y @tropass/mcp-proxy install cursor \
 Можно указать путь явно:
 
 ```bash
-npx -y @tropass/mcp-proxy install generic --config ./my-mcp.json
+npx -y @tropass/mcp-installer generic --config ./my-mcp.json
 ```

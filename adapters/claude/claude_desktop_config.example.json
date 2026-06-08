@@ -1,13 +1,10 @@
 {
   "mcpServers": {
     "tropass": {
-      "command": "npx",
-      "args": ["-y", "@tropass/mcp-proxy"],
-      "env": {
-        "TROPASS_MCP_URL": "https://api.tropass.me/mcp",
-        "TROPASS_API_TOKEN": "your-api-token"
+      "url": "https://api.tropass.me/mcp",
+      "headers": {
+        "X-API-TOKEN": "your-api-token"
       }
     }
   }
 }
-

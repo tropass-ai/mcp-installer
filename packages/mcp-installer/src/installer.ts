@@ -3,7 +3,7 @@ import path from "node:path";
 import { createInterface as createPromptInterface } from "node:readline/promises";
 import process from "node:process";
 
-import { DEFAULT_MCP_URL, SUPPORTED_INSTALL_CLIENTS } from "./constants.js";
+import { DEFAULT_MCP_URL, DEFAULT_TOKEN_HEADER, SUPPORTED_INSTALL_CLIENTS } from "./constants.js";
 import { buildInstructionContent, MANAGED_INSTRUCTIONS_BEGIN, MANAGED_INSTRUCTIONS_END } from "./instructions.js";
 import { expandHome, resolveClaudeDesktopConfigPath } from "./path-utils.js";
 import type {
@@ -16,12 +16,8 @@ import type {
 } from "./types.js";
 
 type ServerConfig = {
-  command: "npx";
-  args: ["-y", "@tropass/mcp-proxy"];
-  env: {
-    TROPASS_MCP_URL: string;
-    TROPASS_API_TOKEN: string;
-  };
+  url: string;
+  headers: Record<string, string>;
 };
 
 export async function runInstall(rawOptions: RawInstallOptions = {}): Promise<void> {
@@ -108,6 +104,9 @@ function resolveConfigPath(client: InstallClient, options: ValidatedInstallOptio
   }
 
   const projectDir = path.resolve(expandHome(options.projectDir));
+  if (client === "codex") {
+    return path.join(projectDir, ".mcp.json");
+  }
   if (client === "cursor") {
     return path.join(projectDir, ".cursor", "mcp.json");
   }
@@ -122,6 +121,9 @@ function resolveConfigPath(client: InstallClient, options: ValidatedInstallOptio
 
 function resolveInstructionPath(client: InstallClient, options: ValidatedInstallOptions, configPath: string): string {
   const projectDir = path.resolve(expandHome(options.projectDir));
+  if (client === "codex") {
+    return path.join(projectDir, ".codex", "skills", "tropass-gateway", "SKILL.md");
+  }
   if (client === "cursor") {
     return path.join(projectDir, ".cursor", "rules", "tropass-mcp.mdc");
   }
@@ -153,11 +155,9 @@ function readJsonFile(filePath: string): JsonObject {
 
 function buildServerConfig(mcpUrl: string, apiToken: string): ServerConfig {
   return {
-    command: "npx",
-    args: ["-y", "@tropass/mcp-proxy"],
-    env: {
-      TROPASS_MCP_URL: mcpUrl,
-      TROPASS_API_TOKEN: apiToken
+    url: mcpUrl,
+    headers: {
+      [DEFAULT_TOKEN_HEADER]: apiToken
     }
   };
 }
@@ -170,7 +170,7 @@ function installServerConfig(client: InstallClient, configPath: string, mcpUrl: 
     payload.servers = {
       ...readObjectProperty(payload, "servers"),
       tropass: {
-        type: "stdio",
+        type: "http",
         ...serverConfig
       }
     };
@@ -244,21 +244,25 @@ async function promptForClient(): Promise<InstallClient> {
 
   try {
     process.stderr.write("Choose MCP client:\n");
-    process.stderr.write("  1. cursor\n");
-    process.stderr.write("  2. vscode\n");
-    process.stderr.write("  3. claude\n");
-    process.stderr.write("  4. generic\n");
-    const answer = (await rl.question("Client [cursor]: ")).trim();
+    process.stderr.write("  1. codex\n");
+    process.stderr.write("  2. cursor\n");
+    process.stderr.write("  3. vscode\n");
+    process.stderr.write("  4. claude\n");
+    process.stderr.write("  5. generic\n");
+    const answer = (await rl.question("Client [codex]: ")).trim();
     if (!answer || answer === "1") {
-      return "cursor";
+      return "codex";
     }
     if (answer === "2") {
-      return "vscode";
+      return "cursor";
     }
     if (answer === "3") {
-      return "claude";
+      return "vscode";
     }
     if (answer === "4") {
+      return "claude";
+    }
+    if (answer === "5") {
       return "generic";
     }
     if (isInstallClient(answer)) {

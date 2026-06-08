@@ -35,4 +35,4 @@ jobs:
         run: npm run test
 
       - name: Check
-        run: npm --workspace packages/mcp-proxy run check
+        run: npm --workspace packages/mcp-installer run check

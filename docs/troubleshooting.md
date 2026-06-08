@@ -11,7 +11,7 @@
 
 ## 403 or invalid token
 
-Gateway не получил валидный `X-API-TOKEN`. Если используется proxy, проверьте env:
+Gateway не получил валидный `X-API-TOKEN`. Проверьте direct MCP config:
 
 ```bash
 echo "$TROPASS_MCP_URL"
@@ -31,4 +31,3 @@ MCP file inputs принимают массивы existing Tropass/S3 URLs. Loca
 ## Unknown tool
 
 Сделайте повторный `initialize`, проверьте `listChanged`, затем `tools/list`. Tool names зависят от текущего списка моделей.
-

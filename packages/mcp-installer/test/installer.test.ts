@@ -20,6 +20,41 @@ afterEach(() => {
 });
 
 describe("installTropassMcp", () => {
+  it("writes Codex MCP config and project skill without removing existing MCP servers", () => {
+    const projectDir = createTempDir();
+    const configPath = path.join(projectDir, ".mcp.json");
+    writeJson(configPath, {
+      mcpServers: {
+        existing: {
+          url: "https://example.test/mcp"
+        }
+      }
+    });
+
+    const result = installTropassMcp({
+      client: "codex",
+      projectDir,
+      mcpUrl: TEST_MCP_URL,
+      apiToken: TEST_API_TOKEN
+    });
+
+    expect(result.configPath).toBe(configPath);
+    expect(result.instructionPath).toBe(path.join(projectDir, ".codex", "skills", "tropass-gateway", "SKILL.md"));
+
+    const config = readJson(configPath);
+    expect(config.mcpServers.existing.url).toBe("https://example.test/mcp");
+    expect(config.mcpServers.tropass).toEqual({
+      url: TEST_MCP_URL,
+      headers: {
+        "X-API-TOKEN": TEST_API_TOKEN
+      }
+    });
+
+    const instructions = fs.readFileSync(result.instructionPath, "utf8");
+    expect(instructions).toContain("name: tropass-gateway");
+    expect(instructions).toContain("Tropass Gateway MCP");
+  });
+
   it("writes Cursor config and rule without removing existing MCP servers", () => {
     const projectDir = createTempDir();
     const configPath = path.join(projectDir, ".cursor", "mcp.json");
@@ -44,11 +79,9 @@ describe("installTropassMcp", () => {
     const config = readJson(configPath);
     expect(config.mcpServers.existing.command).toBe("existing-server");
     expect(config.mcpServers.tropass).toEqual({
-      command: "npx",
-      args: ["-y", "@tropass/mcp-proxy"],
-      env: {
-        TROPASS_MCP_URL: TEST_MCP_URL,
-        TROPASS_API_TOKEN: TEST_API_TOKEN
+      url: TEST_MCP_URL,
+      headers: {
+        "X-API-TOKEN": TEST_API_TOKEN
       }
     });
 
@@ -83,8 +116,8 @@ Keep this too.
     });
 
     const config = readJson(path.join(projectDir, ".vscode", "mcp.json"));
-    expect(config.servers.tropass.type).toBe("stdio");
-    expect(config.servers.tropass.env.TROPASS_API_TOKEN).toBe(TEST_API_TOKEN);
+    expect(config.servers.tropass.type).toBe("http");
+    expect(config.servers.tropass.headers["X-API-TOKEN"]).toBe(TEST_API_TOKEN);
 
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
     expect(instructions).toContain("# User instructions");
@@ -107,7 +140,7 @@ Keep this too.
 
     expect(result.configPath).toBe(configPath);
     expect(result.instructionPath).toBe(path.join(tempDir, "Claude", "tropass-mcp-instructions.md"));
-    expect(readJson(configPath).mcpServers.tropass.env.TROPASS_API_TOKEN).toBe(TEST_API_TOKEN);
+    expect(readJson(configPath).mcpServers.tropass.headers["X-API-TOKEN"]).toBe(TEST_API_TOKEN);
     expect(fs.readFileSync(result.instructionPath, "utf8")).toContain("Claude project or custom instructions");
   });
 
@@ -121,7 +154,7 @@ Keep this too.
 });
 
 function createTempDir(): string {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "tropass-mcp-proxy-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "tropass-mcp-installer-"));
   tempDirs.push(tempDir);
   return tempDir;
 }

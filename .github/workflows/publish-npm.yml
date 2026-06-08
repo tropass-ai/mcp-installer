@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   publish:
-    name: Publish @tropass/mcp-proxy
+    name: Publish @tropass/mcp-installer
     runs-on: ubuntu-latest
 
     steps:
@@ -30,9 +30,9 @@ jobs:
         run: npm ci
 
       - name: Check
-        run: npm --workspace packages/mcp-proxy run check
+        run: npm --workspace packages/mcp-installer run check
 
       - name: Publish
-        run: npm publish --workspace packages/mcp-proxy --access public --provenance
+        run: npm publish --workspace packages/mcp-installer --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

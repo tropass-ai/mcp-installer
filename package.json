@@ -8,8 +8,8 @@
     "packages/*"
   ],
   "scripts": {
-    "lint": "npm --workspace packages/mcp-proxy run lint",
-    "test": "npm --workspace packages/mcp-proxy run test"
+    "lint": "npm --workspace packages/mcp-installer run lint",
+    "test": "npm --workspace packages/mcp-installer run test"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",

@@ -1,4 +1,4 @@
-export type InstallClient = "cursor" | "vscode" | "claude" | "generic";
+export type InstallClient = "codex" | "cursor" | "vscode" | "claude" | "generic";
 
 export type RawInstallOptions = {
   client?: string;
@@ -33,20 +33,4 @@ export type InstallResult = {
   instructionPath: string;
 };
 
-export type RuntimeConfig = {
-  mcpUrl: string;
-  apiToken: string;
-  tokenHeader: string;
-  timeoutMs: number;
-  clientName: string;
-  clientVersion: string;
-};
-
 export type JsonObject = Record<string, unknown>;
-
-export type JsonRpcMessage = JsonObject & {
-  id?: unknown;
-  method?: unknown;
-  params?: unknown;
-};
-

@@ -10,7 +10,7 @@
   "interface": {
     "displayName": "Tropass Agent Kit",
     "shortDescription": "Use Tropass ML models from Codex.",
-    "longDescription": "Adds a Tropass MCP proxy configuration and usage guidance for calling Tropass ML models accurately from Codex.",
+    "longDescription": "Adds a Tropass remote MCP configuration and usage guidance for calling Tropass ML models accurately from Codex.",
     "developerName": "Tropass",
     "category": "Productivity",
     "capabilities": [
@@ -20,4 +20,3 @@
     "defaultPrompt": "Use Tropass MCP to call the appropriate ML model."
   }
 }
-

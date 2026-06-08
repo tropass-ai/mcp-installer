@@ -2,34 +2,15 @@
 
 В этом репозитории главный переносимый слой - MCP. Все agent-specific файлы являются тонкими адаптерами.
 
-## Generic stdio config
+## Generic remote config
 
 Рекомендуемый способ установки config + instructions:
 
 ```bash
-npx -y @tropass/mcp-proxy install
+npx -y @tropass/mcp-installer
 ```
 
 Ручной config:
-
-```json
-{
-  "mcpServers": {
-    "tropass": {
-      "command": "npx",
-      "args": ["-y", "@tropass/mcp-proxy"],
-      "env": {
-        "TROPASS_MCP_URL": "https://api.tropass.me/mcp",
-        "TROPASS_API_TOKEN": "your-api-token"
-      }
-    }
-  }
-}
-```
-
-## Direct remote config
-
-Используйте только если клиент поддерживает Streamable HTTP MCP и custom headers:
 
 ```json
 {
