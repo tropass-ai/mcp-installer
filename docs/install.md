@@ -55,7 +55,7 @@ npx -y @tropass/mcp-installer generic
 ```bash
 npx -y @tropass/mcp-installer cursor \
   --scope project \
-  --url "https://api.tropass.me/mcp" \
+  --url "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp" \
   --token "your-api-token" \
   --yes
 ```

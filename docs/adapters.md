@@ -16,7 +16,7 @@ npx -y @tropass/mcp-installer
 {
   "mcpServers": {
     "tropass": {
-      "url": "https://api.tropass.me/mcp",
+      "url": "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp",
       "headers": {
         "X-API-TOKEN": "your-api-token"
       }
