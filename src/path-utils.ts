@@ -43,9 +43,9 @@ export function resolveGenericConfigPath(): string {
   const home = process.env.HOME || process.env.USERPROFILE || "";
   if (process.platform === "win32") {
     const appData = process.env.APPDATA || path.join(home, "AppData", "Roaming");
-    return path.join(appData, "tropass-agent-kit", "mcp.json");
+    return path.join(appData, "mcp-installer", "mcp.json");
   }
-  return path.join(home, ".config", "tropass-agent-kit", "mcp.json");
+  return path.join(home, ".config", "mcp-installer", "mcp.json");
 }
 
 export function resolveGenericInstructionPath(): string {

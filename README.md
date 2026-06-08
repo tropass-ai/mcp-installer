@@ -1,38 +1,74 @@
-# tropass-agent-kit
+# @tropass/mcp-installer
 
-`tropass-agent-kit` - open-source MCP connector kit для использования ML-моделей Tropass из AI-агентов, IDE и developer tools.
+CLI installer for configuring AI agents and developer tools to use the Tropass remote MCP gateway.
 
-Репозиторий содержит installer, документацию, примеры конфигурации и инструкции для агентов, которые подключаются к Tropass model gateway через MCP.
+Tropass exposes the ML models available to a user as MCP tools, with JSON Schema input validation, structured model responses, and file-like inputs through existing Tropass/S3 file URLs.
 
-Tropass model gateway предоставляет доступные пользователю ML-модели как MCP tools: с учетом прав доступа, JSON Schema валидацией входных данных, структурированными ответами моделей и поддержкой файловых входов через существующие Tropass/S3 file URLs.
+## Install
 
-## Что внутри
-
-- `packages/mcp-installer` - CLI installer, который настраивает direct remote MCP config и инструкции под выбранного агента.
-- `adapters/` - готовые конфиги для Codex, Claude, Cursor, VS Code и generic MCP clients.
-- `packages/mcp-installer/instructions/tropass-mcp.md` - canonical vendor-neutral правила для точного и экономного использования Tropass MCP.
-- `docs/` - auth, tools behavior, примеры подключения и диагностика.
-
-## Быстрый старт
-
-Для большинства агентов установите config одной командой:
+Run the interactive installer:
 
 ```bash
 npx -y @tropass/mcp-installer
 ```
 
-CLI попросит выбрать MCP client, scope установки (`project` или `global`), вставить Tropass API token и сохранит конфигурацию и инструкции для агента в нужные файлы.
+The CLI asks for:
 
-Быстрые варианты:
+- MCP client: Codex, Cursor, VS Code, Claude, or generic;
+- install scope: `project` or `global`;
+- Tropass MCP URL;
+- Tropass API token.
+
+## Quick Commands
 
 ```bash
 npx -y @tropass/mcp-installer codex
 npx -y @tropass/mcp-installer cursor
 npx -y @tropass/mcp-installer vscode
 npx -y @tropass/mcp-installer claude
+npx -y @tropass/mcp-installer generic
 ```
 
-Ручной direct remote config для MCP-клиентов выглядит так:
+## Non-Interactive Install
+
+```bash
+npx -y @tropass/mcp-installer cursor \
+  --scope project \
+  --url "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp" \
+  --token "your-api-token" \
+  --yes
+```
+
+Scope aliases are also available:
+
+```bash
+npx -y @tropass/mcp-installer codex --global --token "your-api-token" --yes
+npx -y @tropass/mcp-installer codex --local --token "your-api-token" --yes
+```
+
+## What It Writes
+
+Project installs:
+
+- Codex: `.codex/config.toml` and `.codex/skills/tropass-gateway/SKILL.md`
+- Cursor: `.cursor/mcp.json` and `.cursor/rules/tropass-mcp.mdc`
+- VS Code: `.vscode/mcp.json` and `.github/copilot-instructions.md`
+- Claude: `.mcp.json` and `CLAUDE.md`
+- Generic: `mcp.json` and `AGENTS.md`
+
+Global installs:
+
+- Codex: `~/.codex/config.toml` and `~/.codex/skills/tropass-gateway/SKILL.md`
+- Cursor: `~/.cursor/mcp.json` and `~/.cursor/rules/tropass-mcp.mdc`
+- VS Code: user `mcp.json` and `copilot-instructions.md`
+- Claude: Claude desktop config and `tropass-mcp-instructions.md`
+- Generic: user config under `~/.config/mcp-installer/` or `%APPDATA%\mcp-installer\`
+
+The installer preserves existing config entries and uses managed instruction blocks where native instruction files are shared with user content.
+
+## Manual MCP Config
+
+For clients that support remote MCP with custom headers:
 
 ```json
 {
@@ -47,6 +83,4 @@ npx -y @tropass/mcp-installer claude
 }
 ```
 
-Подробнее: [docs/install.md](docs/install.md).
-
-Installer считает direct remote MCP основным способом подключения.
+More details are available in [docs/install.md](docs/install.md).

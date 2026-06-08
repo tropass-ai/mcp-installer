@@ -1,20 +1,51 @@
 {
-  "name": "tropass-agent-kit",
+  "name": "@tropass/mcp-installer",
   "version": "0.1.0",
-  "private": true,
-  "description": "MCP connector kit for using Tropass ML models from AI agents and developer tools.",
+  "description": "Installer for configuring agents to use the Tropass remote MCP gateway.",
   "license": "MIT",
-  "workspaces": [
-    "packages/*"
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tropass-ai/mcp-installer.git"
+  },
+  "keywords": [
+    "tropass",
+    "mcp",
+    "model-context-protocol",
+    "ai-agents",
+    "codex",
+    "cursor",
+    "vscode",
+    "claude",
+    "installer",
+    "ml-models"
   ],
-  "scripts": {
-    "lint": "npm --workspace packages/mcp-installer run lint",
-    "test": "npm --workspace packages/mcp-installer run test"
+  "bin": {
+    "tropass-mcp-install": "./dist/bin/tropass-mcp-install.js"
+  },
+  "dependencies": {
+    "commander": "^14.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.1",
     "eslint": "^9.39.1",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.0",
     "vitest": "^4.0.14"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node -e \"const fs = require('node:fs'); fs.rmSync('dist', { recursive: true, force: true }); fs.mkdirSync('dist/instructions', { recursive: true }); fs.copyFileSync('instructions/tropass-mcp.md', 'dist/instructions/tropass-mcp.md')\" && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint bin src test --ext .ts",
+    "test": "vitest run",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build"
   }
 }

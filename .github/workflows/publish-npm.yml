@@ -30,7 +30,7 @@ jobs:
         run: npm ci
 
       - name: Check
-        run: npm --workspace packages/mcp-installer run check
+        run: npm run check
 
       - name: Publish
-        run: npm publish --workspace packages/mcp-installer --access public --provenance
+        run: npm publish --access public --provenance

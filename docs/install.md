@@ -108,8 +108,8 @@ Global install:
   - config on Linux: `~/.config/Claude/claude_desktop_config.json`;
   - instructions: `tropass-mcp-instructions.md` рядом с config;
 - generic:
-  - config on macOS/Linux: `~/.config/tropass-agent-kit/mcp.json`;
-  - config on Windows: `%APPDATA%\tropass-agent-kit\mcp.json`;
+  - config on macOS/Linux: `~/.config/mcp-installer/mcp.json`;
+  - config on Windows: `%APPDATA%\mcp-installer\mcp.json`;
   - instructions: `AGENTS.md` рядом с config.
 
 Для `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, VS Code user instructions и Codex `config.toml` installer использует managed block и не стирает существующие инструкции.

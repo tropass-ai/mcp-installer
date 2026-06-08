@@ -1,16 +1,16 @@
-# Adapters
+# Client Adapters
 
-В этом репозитории главный переносимый слой - MCP. Все agent-specific файлы являются тонкими адаптерами.
+В этом репозитории главный переносимый слой - MCP. Agent-specific конфиги и инструкции генерирует installer, чтобы не хранить несколько расходящихся копий одних и тех же правил.
 
-## Generic remote config
-
-Рекомендуемый способ установки config + instructions:
+Рекомендуемый способ установки config + instructions для Codex, Cursor, VS Code, Claude и generic MCP clients:
 
 ```bash
 npx -y @tropass/mcp-installer
 ```
 
-Ручной config:
+Installer спросит MCP client и scope (`project` или `global`), затем запишет нативный config и instruction/rules файл выбранного клиента.
+
+Ручной direct remote config для клиентов, которые поддерживают remote MCP with custom headers:
 
 ```json
 {
@@ -25,10 +25,4 @@ npx -y @tropass/mcp-installer
 }
 ```
 
-## Vendor-specific files
-
-- `adapters/codex` - Codex plugin с MCP config и skill.
-- `adapters/claude` - пример `claude_desktop_config.json` и инструкции.
-- `adapters/cursor` - пример `.cursor/mcp.json` и `.cursor/rules/tropass-mcp.mdc`.
-- `adapters/vscode` - пример `.vscode/mcp.json` и `.github/copilot-instructions.md`.
-- `adapters/generic` - vendor-neutral инструкции.
+Подробные пути для каждого клиента описаны в [install.md](install.md).
