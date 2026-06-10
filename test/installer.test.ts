@@ -52,8 +52,9 @@ describe("installTropassMcp", () => {
     expect(config).toContain("[mcp_servers.tropass]");
     expect(config).toContain(`url = "${TEST_MCP_URL}"`);
     expect(config).toContain(
-      `headers = { "X-API-TOKEN" = "${TEST_API_TOKEN}" }`,
+      `http_headers = { "X-API-TOKEN" = "${TEST_API_TOKEN}" }`,
     );
+    expect(config).toContain("tool_timeout_sec = 900");
 
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
     expect(instructions).toContain("name: tropass-gateway");
@@ -115,6 +116,7 @@ describe("installTropassMcp", () => {
       headers: {
         "X-API-TOKEN": TEST_API_TOKEN,
       },
+      timeout: 900,
     });
 
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
@@ -154,6 +156,7 @@ Keep this too.
     const config = readJson(path.join(projectDir, ".vscode", "mcp.json"));
     expect(config.servers.tropass.type).toBe("http");
     expect(config.servers.tropass.headers["X-API-TOKEN"]).toBe(TEST_API_TOKEN);
+    expect(config.servers.tropass.timeout).toBe(900);
 
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
     expect(instructions).toContain("# User instructions");
@@ -185,9 +188,30 @@ Keep this too.
     expect(readJson(configPath).mcpServers.tropass.headers["X-API-TOKEN"]).toBe(
       TEST_API_TOKEN,
     );
+    expect(readJson(configPath).mcpServers.tropass.timeout).toBe(900);
     expect(fs.readFileSync(result.instructionPath, "utf8")).toContain(
       "Claude project or custom instructions",
     );
+  });
+
+  it("writes generic MCP config with timeout", () => {
+    const projectDir = createTempDir();
+
+    const result = installTropassMcp({
+      client: "generic",
+      projectDir,
+      mcpUrl: TEST_MCP_URL,
+      apiToken: TEST_API_TOKEN,
+    });
+
+    const config = readJson(result.configPath);
+    expect(config.mcpServers.tropass).toEqual({
+      url: TEST_MCP_URL,
+      headers: {
+        "X-API-TOKEN": TEST_API_TOKEN,
+      },
+      timeout: 900,
+    });
   });
 
   it("rejects unsupported clients", () => {

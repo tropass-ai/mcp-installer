@@ -30,10 +30,12 @@ import type {
 type ServerConfig = {
   url: string;
   headers: Record<string, string>;
+  timeout: number;
 };
 
 const MANAGED_CODEX_CONFIG_BEGIN = "# BEGIN TROPASS MCP CONFIG";
 const MANAGED_CODEX_CONFIG_END = "# END TROPASS MCP CONFIG";
+const TOOL_TIMEOUT_SECONDS = 15 * 60;
 
 export async function runInstall(rawOptions: RawInstallOptions = {}): Promise<void> {
   const options = normalizeInstallOptions(rawOptions);
@@ -229,7 +231,8 @@ function buildServerConfig(mcpUrl: string, apiToken: string): ServerConfig {
     url: mcpUrl,
     headers: {
       [DEFAULT_TOKEN_HEADER]: apiToken
-    }
+    },
+    timeout: TOOL_TIMEOUT_SECONDS
   };
 }
 
@@ -266,7 +269,8 @@ function installCodexServerConfig(configPath: string, mcpUrl: string, apiToken: 
     MANAGED_CODEX_CONFIG_BEGIN,
     "[mcp_servers.tropass]",
     `url = ${stringifyTomlValue(mcpUrl)}`,
-    `headers = { ${stringifyTomlKey(DEFAULT_TOKEN_HEADER)} = ${stringifyTomlValue(apiToken)} }`,
+    `http_headers = { ${stringifyTomlKey(DEFAULT_TOKEN_HEADER)} = ${stringifyTomlValue(apiToken)} }`,
+    `tool_timeout_sec = ${TOOL_TIMEOUT_SECONDS}`,
     MANAGED_CODEX_CONFIG_END
   ].join("\n");
 

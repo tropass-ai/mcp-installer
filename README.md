@@ -77,7 +77,8 @@ For clients that support remote MCP with custom headers:
       "url": "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp",
       "headers": {
         "X-API-TOKEN": "your-api-token"
-      }
+      },
+      "timeout": 900
     }
   }
 }
