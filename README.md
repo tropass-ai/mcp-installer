@@ -50,7 +50,7 @@ npx -y @tropass/mcp-installer codex --local --token "your-api-token" --yes
 
 Project installs:
 
-- Codex: `.codex/config.toml` and `.codex/skills/tropass-gateway/SKILL.md`
+- Codex: `.codex/config.toml`, `.codex/skills/tropass-gateway/SKILL.md`, and `.codex/skills/agent-response-display/SKILL.md`
 - Cursor: `.cursor/mcp.json` and `.cursor/rules/tropass-mcp.mdc`
 - VS Code: `.vscode/mcp.json` and `.github/copilot-instructions.md`
 - Claude: `.mcp.json` and `CLAUDE.md`
@@ -58,7 +58,7 @@ Project installs:
 
 Global installs:
 
-- Codex: `~/.codex/config.toml` and `~/.codex/skills/tropass-gateway/SKILL.md`
+- Codex: `~/.codex/config.toml`, `~/.codex/skills/tropass-gateway/SKILL.md`, and `~/.codex/skills/agent-response-display/SKILL.md`
 - Cursor: `~/.cursor/mcp.json` and `~/.cursor/rules/tropass-mcp.mdc`
 - VS Code: user `mcp.json` and `copilot-instructions.md`
 - Claude: Claude desktop config and `tropass-mcp-instructions.md`

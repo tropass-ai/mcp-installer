@@ -59,6 +59,18 @@ describe("installTropassMcp", () => {
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
     expect(instructions).toContain("name: tropass-gateway");
     expect(instructions).toContain("Tropass Gateway MCP");
+
+    const displaySkillPath = path.join(
+      projectDir,
+      ".codex",
+      "skills",
+      "agent-response-display",
+      "SKILL.md",
+    );
+    const displaySkill = fs.readFileSync(displaySkillPath, "utf8");
+    expect(displaySkill).toContain("name: agent-response-display");
+    expect(displaySkill).toContain("Interpret Tropass MCP/ML agent responses");
+    expect(displaySkill).toContain("Panel ordering");
   });
 
   it("writes Codex global config and global skill", () => {
@@ -84,6 +96,18 @@ describe("installTropassMcp", () => {
     expect(fs.readFileSync(result.instructionPath, "utf8")).toContain(
       "Tropass Gateway MCP",
     );
+    expect(
+      fs.readFileSync(
+        path.join(
+          homeDir,
+          ".codex",
+          "skills",
+          "agent-response-display",
+          "SKILL.md",
+        ),
+        "utf8",
+      ),
+    ).toContain("Agent Response Display");
   });
 
   it("writes Cursor config and rule without removing existing MCP servers", () => {

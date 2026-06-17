@@ -76,6 +76,7 @@ Project install:
 - Codex:
   - config: `.codex/config.toml` в текущем проекте;
   - instructions: `.codex/skills/tropass-gateway/SKILL.md`;
+  - response display skill: `.codex/skills/agent-response-display/SKILL.md`;
 - Cursor:
   - config: `.cursor/mcp.json` в текущем проекте;
   - instructions: `.cursor/rules/tropass-mcp.mdc`;
@@ -94,6 +95,7 @@ Global install:
 - Codex:
   - config: `~/.codex/config.toml`;
   - instructions: `~/.codex/skills/tropass-gateway/SKILL.md`;
+  - response display skill: `~/.codex/skills/agent-response-display/SKILL.md`;
 - Cursor:
   - config: `~/.cursor/mcp.json`;
   - instructions: `~/.cursor/rules/tropass-mcp.mdc`;

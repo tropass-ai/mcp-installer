@@ -4,7 +4,12 @@ import { createInterface as createPromptInterface } from "node:readline/promises
 import process from "node:process";
 
 import { DEFAULT_MCP_URL, DEFAULT_TOKEN_HEADER, SUPPORTED_INSTALL_CLIENTS } from "./constants.js";
-import { buildInstructionContent, MANAGED_INSTRUCTIONS_BEGIN, MANAGED_INSTRUCTIONS_END } from "./instructions.js";
+import {
+  buildInstructionContent,
+  buildSkillContents,
+  MANAGED_INSTRUCTIONS_BEGIN,
+  MANAGED_INSTRUCTIONS_END
+} from "./instructions.js";
 import {
   expandHome,
   resolveCodexConfigPath,
@@ -302,12 +307,24 @@ function stringifyTomlValue(value: string): string {
 }
 
 function installInstructions(client: InstallClient, scope: InstallScope, instructionPath: string): void {
+  if (client === "codex") {
+    installCodexSkills(instructionPath);
+    return;
+  }
+
   const instructionContent = buildInstructionContent(client);
   if (client === "vscode" || client === "generic" || (client === "claude" && scope === "project")) {
     upsertManagedInstructionBlock(instructionPath, instructionContent);
     return;
   }
   writeTextFile(instructionPath, instructionContent);
+}
+
+function installCodexSkills(primaryInstructionPath: string): void {
+  const skillsPath = path.dirname(path.dirname(primaryInstructionPath));
+  for (const skillContent of buildSkillContents()) {
+    writeTextFile(path.join(skillsPath, skillContent.name, "SKILL.md"), skillContent.content);
+  }
 }
 
 function upsertManagedInstructionBlock(filePath: string, content: string): void {
