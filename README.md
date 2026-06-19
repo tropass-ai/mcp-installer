@@ -2,11 +2,13 @@
 
 CLI installer for configuring AI agents and developer tools to use the Tropass remote MCP gateway.
 
+[Tropass](https://xn--80a1adciab.xn--p1ai/)
+
 Tropass exposes the ML models available to a user as MCP tools, with JSON Schema input validation, structured model responses, and file-like inputs through existing Tropass/S3 file URLs.
 
 ## Install
 
-Run the interactive installer:
+Run the Ink-powered interactive installer:
 
 ```bash
 npx -y @tropass/mcp-installer

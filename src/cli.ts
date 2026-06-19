@@ -2,6 +2,7 @@ import process from "node:process";
 
 import { Command, CommanderError } from "commander";
 
+import { TROPASS_URL } from "./constants.js";
 import { runInstall } from "./installer.js";
 import { logError } from "./logging.js";
 import type { RawInstallOptions } from "./types.js";
@@ -27,7 +28,7 @@ async function runInstallCommand(args: string[], commandName: string): Promise<v
 function createInstallCommand(commandName: string): Command {
   return new Command()
     .name(commandName)
-    .description("Install direct remote Tropass MCP config and agent instructions.")
+    .description(`Install direct remote Tropass MCP config and agent instructions.\nTropass: ${TROPASS_URL}`)
     .argument("[client]", "MCP client: codex, cursor, vscode, claude, or generic")
     .option("--config <path>", "explicit path to the MCP config file")
     .option("--url <url>", "Tropass MCP endpoint URL")

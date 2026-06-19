@@ -5,7 +5,7 @@ export default [
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
-    files: ["bin/**/*.ts", "src/**/*.ts", "test/**/*.ts"],
+    files: ["bin/**/*.ts", "src/**/*.{ts,tsx}", "test/**/*.{ts,tsx}"],
     languageOptions: {
       ecmaVersion: "latest",
       sourceType: "module",

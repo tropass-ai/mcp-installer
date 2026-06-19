@@ -1,6 +1,5 @@
 import fs from "node:fs";
 import path from "node:path";
-import { createInterface as createPromptInterface } from "node:readline/promises";
 import process from "node:process";
 
 import { DEFAULT_MCP_URL, DEFAULT_TOKEN_HEADER, SUPPORTED_INSTALL_CLIENTS } from "./constants.js";
@@ -10,6 +9,7 @@ import {
   MANAGED_INSTRUCTIONS_BEGIN,
   MANAGED_INSTRUCTIONS_END
 } from "./instructions.js";
+import { runInteractiveInstaller, writeInstallResult } from "./interactive-installer.js";
 import {
   expandHome,
   resolveCodexConfigPath,
@@ -44,28 +44,25 @@ const TOOL_TIMEOUT_SECONDS = 15 * 60;
 
 export async function runInstall(rawOptions: RawInstallOptions = {}): Promise<void> {
   const options = normalizeInstallOptions(rawOptions);
-  const client = options.client !== undefined ? validateInstallClient(options.client) : await promptForClient();
+  const client = options.client !== undefined ? validateInstallClient(options.client) : undefined;
   const scope = options.scope !== undefined
     ? validateInstallScope(options.scope)
-    : options.yes
+    : options.yes && client !== undefined
       ? resolveDefaultScope(client)
-      : await promptForScope(client);
-  const mcpUrl = options.yes ? options.mcpUrl : await promptForText("Tropass MCP URL", options.mcpUrl);
-  const apiToken = options.apiToken ?? await promptForSecret("Tropass API token");
+      : undefined;
+
+  const interactiveOptions = await runInteractiveInstaller({
+    ...options,
+    client,
+    scope
+  });
 
   const result = installTropassMcp({
     ...options,
-    client,
-    scope,
-    mcpUrl,
-    apiToken
+    ...interactiveOptions
   });
 
-  process.stderr.write(`Installed Tropass MCP for ${result.client}.\n`);
-  process.stderr.write(`Scope: ${result.scope}\n`);
-  process.stderr.write(`Config file: ${result.configPath}\n`);
-  process.stderr.write(`Instructions file: ${result.instructionPath}\n`);
-  process.stderr.write("Restart or reload your MCP client to pick up the new server.\n");
+  writeInstallResult(result);
 }
 
 export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult {
@@ -148,7 +145,7 @@ function normalizeScopeOption(options: RawInstallOptions): string | undefined {
   return options.scope;
 }
 
-function resolveDefaultScope(client: InstallClient): InstallScope {
+export function resolveDefaultScope(client: InstallClient): InstallScope {
   return client === "claude" ? "global" : "project";
 }
 
@@ -367,119 +364,4 @@ function readObjectProperty(payload: JsonObject, key: string): JsonObject {
 
 function isJsonObject(value: unknown): value is JsonObject {
   return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-async function promptForClient(): Promise<InstallClient> {
-  const rl = createPromptInterface({
-    input: process.stdin,
-    output: process.stderr
-  });
-
-  try {
-    process.stderr.write("Choose MCP client:\n");
-    process.stderr.write("  1. codex\n");
-    process.stderr.write("  2. cursor\n");
-    process.stderr.write("  3. vscode\n");
-    process.stderr.write("  4. claude\n");
-    process.stderr.write("  5. generic\n");
-    const answer = (await rl.question("Client [codex]: ")).trim();
-    if (!answer || answer === "1") {
-      return "codex";
-    }
-    if (answer === "2") {
-      return "cursor";
-    }
-    if (answer === "3") {
-      return "vscode";
-    }
-    if (answer === "4") {
-      return "claude";
-    }
-    if (answer === "5") {
-      return "generic";
-    }
-    if (isInstallClient(answer)) {
-      return answer;
-    }
-    throw new Error(`Unsupported client '${answer}'. Use one of: ${[...SUPPORTED_INSTALL_CLIENTS].join(", ")}.`);
-  } finally {
-    rl.close();
-  }
-}
-
-async function promptForScope(client: InstallClient): Promise<InstallScope> {
-  const defaultScope = resolveDefaultScope(client);
-  const alternativeScope = defaultScope === "project" ? "global" : "project";
-  const rl = createPromptInterface({
-    input: process.stdin,
-    output: process.stderr
-  });
-
-  try {
-    process.stderr.write("Choose install scope:\n");
-    process.stderr.write(`  1. ${defaultScope}\n`);
-    process.stderr.write(`  2. ${alternativeScope}\n`);
-    const answer = (await rl.question(`Scope [${defaultScope}]: `)).trim();
-    if (!answer || answer === "1") {
-      return defaultScope;
-    }
-    if (answer === "2") {
-      return alternativeScope;
-    }
-    return validateInstallScope(answer);
-  } finally {
-    rl.close();
-  }
-}
-
-async function promptForText(question: string, defaultValue?: string): Promise<string> {
-  const rl = createPromptInterface({
-    input: process.stdin,
-    output: process.stderr
-  });
-
-  try {
-    const suffix = defaultValue ? ` [${defaultValue}]` : "";
-    const answer = (await rl.question(`${question}${suffix}: `)).trim();
-    return answer || defaultValue || "";
-  } finally {
-    rl.close();
-  }
-}
-
-async function promptForSecret(question: string): Promise<string> {
-  if (!process.stdin.isTTY) {
-    return promptForText(question);
-  }
-
-  process.stderr.write(`${question}: `);
-  process.stdin.setRawMode(true);
-  process.stdin.resume();
-  process.stdin.setEncoding("utf8");
-
-  return await new Promise((resolve) => {
-    let value = "";
-
-    const onData = (char: string): void => {
-      if (char === "\u0003") {
-        process.stderr.write("\n");
-        process.exit(130);
-      }
-      if (char === "\r" || char === "\n") {
-        process.stdin.setRawMode(false);
-        process.stdin.pause();
-        process.stdin.off("data", onData);
-        process.stderr.write("\n");
-        resolve(value);
-        return;
-      }
-      if (char === "\u007f" || char === "\b") {
-        value = value.slice(0, -1);
-        return;
-      }
-      value += char;
-    };
-
-    process.stdin.on("data", onData);
-  });
 }
