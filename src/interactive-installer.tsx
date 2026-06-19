@@ -25,9 +25,9 @@ type Step = "client" | "scope" | "url" | "token";
 
 const CLIENT_ITEMS: Array<{ label: string; value: InstallClient }> = [
   { label: "Codex", value: "codex" },
+  { label: "Claude", value: "claude" },
   { label: "Cursor", value: "cursor" },
   { label: "VS Code", value: "vscode" },
-  { label: "Claude", value: "claude" },
   { label: "Generic MCP client", value: "generic" }
 ];
 
