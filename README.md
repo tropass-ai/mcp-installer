@@ -1,27 +1,27 @@
 # @tropass/mcp-installer
 
-CLI installer for configuring AI agents and developer tools to use the Tropass remote MCP gateway.
+CLI-инсталлер для настройки AI-агентов на работу с удалённым Tropass MCP gateway.
 
 [Tropass](https://xn--80a1adciab.xn--p1ai/)
 
-Tropass exposes the ML models available to a user as MCP tools, with JSON Schema input validation, structured model responses, and file-like inputs through existing Tropass/S3 file URLs.
+Tropass отдаёт доступные пользователю ML-модели как MCP tools: с JSON Schema валидацией входных параметров, структурированными ответами моделей и file-like аргументами через существующие Tropass/S3 URL файлов.
 
-## Install
+## Установка
 
-Run the Ink-powered interactive installer:
+Запустите интерактивный инсталлер:
 
 ```bash
 npx -y @tropass/mcp-installer
 ```
 
-The CLI asks for:
+CLI спросит:
 
-- MCP client: Codex, Claude, Cursor, or OpenCode;
-- install scope: `project` or `global`;
+- MCP client: Codex, Claude, Cursor или OpenCode;
+- scope установки: `project` или `global`;
 - Tropass MCP URL;
 - Tropass API token.
 
-## Quick Commands
+## Быстрые Команды
 
 ```bash
 npx -y @tropass/mcp-installer codex
@@ -30,7 +30,7 @@ npx -y @tropass/mcp-installer claude
 npx -y @tropass/mcp-installer opencode
 ```
 
-## Non-Interactive Install
+## Неинтерактивная Установка
 
 ```bash
 npx -y @tropass/mcp-installer cursor \
@@ -40,34 +40,34 @@ npx -y @tropass/mcp-installer cursor \
   --yes
 ```
 
-Scope aliases are also available:
+Также доступны алиасы scope:
 
 ```bash
 npx -y @tropass/mcp-installer codex --global --token "your-api-token" --yes
 npx -y @tropass/mcp-installer codex --local --token "your-api-token" --yes
 ```
 
-## What It Writes
+## Какие Файлы Создаются
 
-Project installs:
+Project install:
 
-- Codex: `.codex/config.toml`, `.codex/skills/tropass-gateway/SKILL.md`, and `.codex/skills/agent-response-display/SKILL.md`
-- Cursor: `.cursor/mcp.json` and `.cursor/rules/tropass-mcp.mdc`
-- Claude: `.mcp.json` and `CLAUDE.md`
-- OpenCode: `opencode.json` and `AGENTS.md`
+- Codex: `.codex/config.toml`, `.codex/skills/tropass-gateway/SKILL.md` и `.codex/skills/agent-response-display/SKILL.md`
+- Cursor: `.cursor/mcp.json` и `.cursor/rules/tropass-mcp.mdc`
+- Claude: `.mcp.json` и `CLAUDE.md`
+- OpenCode: `opencode.json` и `AGENTS.md`
 
-Global installs:
+Global install:
 
-- Codex: `~/.codex/config.toml`, `~/.codex/skills/tropass-gateway/SKILL.md`, and `~/.codex/skills/agent-response-display/SKILL.md`
-- Cursor: `~/.cursor/mcp.json` and `~/.cursor/rules/tropass-mcp.mdc`
-- Claude: `~/.claude.json` and `~/.claude/CLAUDE.md`
-- OpenCode: `~/.config/opencode/opencode.json` or `%APPDATA%\opencode\opencode.json`, and `AGENTS.md`
+- Codex: `~/.codex/config.toml`, `~/.codex/skills/tropass-gateway/SKILL.md` и `~/.codex/skills/agent-response-display/SKILL.md`
+- Cursor: `~/.cursor/mcp.json` и `~/.cursor/rules/tropass-mcp.mdc`
+- Claude: `~/.claude.json` и `~/.claude/CLAUDE.md`
+- OpenCode: `~/.config/opencode/opencode.json` или `%APPDATA%\opencode\opencode.json`, и `AGENTS.md`
 
-The installer preserves existing config entries and uses managed instruction blocks where native instruction files are shared with user content.
+Инсталлер сохраняет существующие config entries и использует managed blocks для instruction-файлов, которые могут содержать пользовательский текст.
 
-## Manual MCP Config
+## Ручная MCP Конфигурация
 
-For clients that support remote MCP with custom headers:
+Для Claude Code нужен явный HTTP server type:
 
 ```json
 {
@@ -84,7 +84,9 @@ For clients that support remote MCP with custom headers:
 }
 ```
 
-OpenCode stores MCP servers under the `mcp` key in `opencode.json`:
+Cursor использует такой же `mcpServers` формат. Если конкретная версия Cursor не принимает `type`, удалите поле `"type": "http"`.
+
+OpenCode хранит MCP servers в секции `mcp` файла `opencode.json` и требует `type: "remote"` и `enabled: true`:
 
 ```json
 {
@@ -101,4 +103,4 @@ OpenCode stores MCP servers under the `mcp` key in `opencode.json`:
 }
 ```
 
-More details are available in [docs/install.md](docs/install.md).
+Подробнее: [docs/install.md](docs/install.md).
