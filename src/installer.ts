@@ -18,9 +18,7 @@ import {
   resolveCursorConfigPath,
   resolveCursorRulesPath,
   resolveOpenCodeConfigPath,
-  resolveOpenCodeInstructionPath,
-  resolveVSCodeUserConfigPath,
-  resolveVSCodeUserInstructionPath
+  resolveOpenCodeInstructionPath
 } from "./path-utils.js";
 import type {
   InstallClient,
@@ -176,9 +174,6 @@ function resolveConfigPath(client: InstallClient, options: ValidatedInstallOptio
   if (client === "cursor") {
     return options.scope === "global" ? resolveCursorConfigPath() : path.join(projectDir, ".cursor", "mcp.json");
   }
-  if (client === "vscode") {
-    return options.scope === "global" ? resolveVSCodeUserConfigPath() : path.join(projectDir, ".vscode", "mcp.json");
-  }
   if (client === "claude") {
     return options.scope === "global" ? resolveClaudeDesktopConfigPath() : path.join(projectDir, ".mcp.json");
   }
@@ -197,11 +192,6 @@ function resolveInstructionPath(client: InstallClient, options: ValidatedInstall
   if (client === "cursor") {
     const rulesPath = options.scope === "global" ? resolveCursorRulesPath() : path.join(projectDir, ".cursor", "rules");
     return path.join(rulesPath, "tropass-mcp.mdc");
-  }
-  if (client === "vscode") {
-    return options.scope === "global"
-      ? resolveVSCodeUserInstructionPath()
-      : path.join(projectDir, ".github", "copilot-instructions.md");
   }
   if (client === "claude" && options.scope === "project") {
     return path.join(projectDir, "CLAUDE.md");
@@ -248,20 +238,10 @@ function installServerConfig(client: InstallClient, configPath: string, mcpUrl: 
   const payload = readJsonFile(configPath);
   const serverConfig = buildServerConfig(mcpUrl, apiToken);
 
-  if (client === "vscode") {
-    payload.servers = {
-      ...readObjectProperty(payload, "servers"),
-      tropass: {
-        type: "http",
-        ...serverConfig
-      }
-    };
-  } else {
-    payload.mcpServers = {
-      ...readObjectProperty(payload, "mcpServers"),
-      tropass: serverConfig
-    };
-  }
+  payload.mcpServers = {
+    ...readObjectProperty(payload, "mcpServers"),
+    tropass: serverConfig
+  };
 
   fs.mkdirSync(path.dirname(configPath), { recursive: true });
   fs.writeFileSync(configPath, `${JSON.stringify(payload, null, 2)}\n`);
@@ -311,7 +291,7 @@ function installInstructions(client: InstallClient, scope: InstallScope, instruc
   }
 
   const instructionContent = buildInstructionContent(client);
-  if (client === "vscode" || client === "opencode" || (client === "claude" && scope === "project")) {
+  if (client === "opencode" || (client === "claude" && scope === "project")) {
     upsertManagedInstructionBlock(instructionPath, instructionContent);
     return;
   }

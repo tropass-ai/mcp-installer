@@ -51,18 +51,3 @@ export function resolveOpenCodeConfigPath(): string {
 export function resolveOpenCodeInstructionPath(): string {
   return path.join(path.dirname(resolveOpenCodeConfigPath()), "AGENTS.md");
 }
-
-export function resolveVSCodeUserConfigPath(): string {
-  if (process.platform === "darwin") {
-    return path.join(process.env.HOME || "", "Library", "Application Support", "Code", "User", "mcp.json");
-  }
-  if (process.platform === "win32") {
-    const appData = process.env.APPDATA || path.join(process.env.USERPROFILE || "", "AppData", "Roaming");
-    return path.join(appData, "Code", "User", "mcp.json");
-  }
-  return path.join(process.env.HOME || "", ".config", "Code", "User", "mcp.json");
-}
-
-export function resolveVSCodeUserInstructionPath(): string {
-  return path.join(path.dirname(resolveVSCodeUserConfigPath()), "copilot-instructions.md");
-}

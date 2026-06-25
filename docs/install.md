@@ -32,12 +32,6 @@ Cursor project config:
 npx -y @tropass/mcp-installer cursor
 ```
 
-VS Code workspace config:
-
-```bash
-npx -y @tropass/mcp-installer vscode
-```
-
 Claude project config:
 
 ```bash
@@ -69,7 +63,7 @@ npx -y @tropass/mcp-installer codex --local --token "your-api-token" --yes
 
 ## Куда пишутся файлы
 
-По умолчанию installer спрашивает scope. С `--yes` используются defaults: `project` для Codex, Claude, Cursor, OpenCode и VS Code.
+По умолчанию installer спрашивает scope. С `--yes` используются defaults: `project` для Codex, Claude, Cursor и OpenCode.
 
 Project install:
 
@@ -80,9 +74,6 @@ Project install:
 - Cursor:
   - config: `.cursor/mcp.json` в текущем проекте;
   - instructions: `.cursor/rules/tropass-mcp.mdc`;
-- VS Code:
-  - config: `.vscode/mcp.json` в текущем workspace;
-  - instructions: `.github/copilot-instructions.md`;
 - Claude:
   - config: `.mcp.json` в текущем проекте;
   - instructions: `CLAUDE.md`;
@@ -98,11 +89,6 @@ Global install:
 - Cursor:
   - config: `~/.cursor/mcp.json`;
   - instructions: `~/.cursor/rules/tropass-mcp.mdc`;
-- VS Code:
-  - config on macOS: `~/Library/Application Support/Code/User/mcp.json`;
-  - config on Windows: `%APPDATA%\Code\User\mcp.json`;
-  - config on Linux: `~/.config/Code/User/mcp.json`;
-  - instructions: `copilot-instructions.md` рядом с user config;
 - Claude:
   - config on macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`;
   - config on Windows: `%APPDATA%\Claude\claude_desktop_config.json`;
@@ -112,7 +98,7 @@ Global install:
   - config on macOS/Linux: `~/.config/opencode/mcp.json`;
   - config on Windows: `%APPDATA%\opencode\mcp.json`;
   - instructions: `AGENTS.md` рядом с config;
-Для `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, VS Code user instructions и Codex `config.toml` installer использует managed block и не стирает существующие инструкции.
+Для `AGENTS.md`, `CLAUDE.md` и Codex `config.toml` installer использует managed block и не стирает существующие инструкции.
 
 Можно указать путь явно:
 

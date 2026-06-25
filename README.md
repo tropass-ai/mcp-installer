@@ -16,7 +16,7 @@ npx -y @tropass/mcp-installer
 
 The CLI asks for:
 
-- MCP client: Codex, Claude, Cursor, OpenCode, or VS Code;
+- MCP client: Codex, Claude, Cursor, or OpenCode;
 - install scope: `project` or `global`;
 - Tropass MCP URL;
 - Tropass API token.
@@ -26,7 +26,6 @@ The CLI asks for:
 ```bash
 npx -y @tropass/mcp-installer codex
 npx -y @tropass/mcp-installer cursor
-npx -y @tropass/mcp-installer vscode
 npx -y @tropass/mcp-installer claude
 npx -y @tropass/mcp-installer opencode
 ```
@@ -54,7 +53,6 @@ Project installs:
 
 - Codex: `.codex/config.toml`, `.codex/skills/tropass-gateway/SKILL.md`, and `.codex/skills/agent-response-display/SKILL.md`
 - Cursor: `.cursor/mcp.json` and `.cursor/rules/tropass-mcp.mdc`
-- VS Code: `.vscode/mcp.json` and `.github/copilot-instructions.md`
 - Claude: `.mcp.json` and `CLAUDE.md`
 - OpenCode: `opencode.json` and `AGENTS.md`
 
@@ -62,7 +60,6 @@ Global installs:
 
 - Codex: `~/.codex/config.toml`, `~/.codex/skills/tropass-gateway/SKILL.md`, and `~/.codex/skills/agent-response-display/SKILL.md`
 - Cursor: `~/.cursor/mcp.json` and `~/.cursor/rules/tropass-mcp.mdc`
-- VS Code: user `mcp.json` and `copilot-instructions.md`
 - Claude: Claude desktop config and `tropass-mcp-instructions.md`
 - OpenCode: `~/.config/opencode/mcp.json` or `%APPDATA%\opencode\mcp.json`, and `AGENTS.md`
 

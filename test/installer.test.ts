@@ -148,48 +148,6 @@ describe("installTropassMcp", () => {
     expect(instructions).toContain("Tropass MCP Instructions");
   });
 
-  it("updates VS Code managed instruction block and preserves user text", () => {
-    const projectDir = createTempDir();
-    const instructionsPath = path.join(
-      projectDir,
-      ".github",
-      "copilot-instructions.md",
-    );
-    fs.mkdirSync(path.dirname(instructionsPath), {recursive: true});
-    fs.writeFileSync(
-      instructionsPath,
-      `# User instructions
-
-Keep this.
-
-${MANAGED_INSTRUCTIONS_BEGIN}
-old text
-${MANAGED_INSTRUCTIONS_END}
-
-Keep this too.
-`,
-    );
-
-    const result = installTropassMcp({
-      client: "vscode",
-      projectDir,
-      mcpUrl: TEST_MCP_URL,
-      apiToken: TEST_API_TOKEN,
-    });
-
-    const config = readJson(path.join(projectDir, ".vscode", "mcp.json"));
-    expect(config.servers.tropass.type).toBe("http");
-    expect(config.servers.tropass.headers["X-API-TOKEN"]).toBe(TEST_API_TOKEN);
-    expect(config.servers.tropass.timeout).toBe(900);
-
-    const instructions = fs.readFileSync(result.instructionPath, "utf8");
-    expect(instructions).toContain("# User instructions");
-    expect(instructions).toContain("Keep this.");
-    expect(instructions).toContain("Keep this too.");
-    expect(instructions).toContain("Tropass MCP Instructions");
-    expect(instructions).not.toContain("old text");
-  });
-
   it("writes Claude config to explicit path and instructions next to it", () => {
     const tempDir = createTempDir();
     const configPath = path.join(

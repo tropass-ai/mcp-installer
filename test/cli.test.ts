@@ -97,7 +97,7 @@ describe("main", () => {
       "node",
       "/usr/local/bin/tropass-mcp-install",
       "install",
-      "vscode",
+      "opencode",
       "--token",
       "token-123",
       "--yes"
@@ -107,7 +107,7 @@ describe("main", () => {
     await main();
 
     expect(runInstall).toHaveBeenCalledWith({
-      client: "vscode",
+      client: "opencode",
       token: "token-123",
       yes: true
     });
@@ -122,7 +122,7 @@ describe("main", () => {
     expect(stdout).toContain("Usage: tropass-mcp-install [options] [client]");
     expect(stdout).toContain("Install direct remote Tropass MCP config and agent instructions.");
     expect(stdout).toContain("Tropass: https://xn--80a1adciab.xn--p1ai/");
-    expect(stdout).toContain("codex, cursor, vscode, claude, or opencode");
+    expect(stdout).toContain("codex, cursor, claude, or opencode");
     expect(stdout).toContain("install scope: project or global");
     expect(runInstall).not.toHaveBeenCalled();
   });

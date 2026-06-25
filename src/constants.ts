@@ -6,7 +6,6 @@ export const DEFAULT_TOKEN_HEADER = "X-API-TOKEN";
 export const SUPPORTED_INSTALL_CLIENTS = new Set<InstallClient>([
   "codex",
   "cursor",
-  "vscode",
   "claude",
   "opencode",
 ]);

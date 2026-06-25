@@ -2,7 +2,7 @@
 
 В этом репозитории главный переносимый слой - MCP. Agent-specific конфиги и инструкции генерирует installer, чтобы не хранить несколько расходящихся копий одних и тех же правил.
 
-Рекомендуемый способ установки config + instructions для Codex, Claude, Cursor, OpenCode и VS Code:
+Рекомендуемый способ установки config + instructions для Codex, Claude, Cursor и OpenCode:
 
 ```bash
 npx -y @tropass/mcp-installer
