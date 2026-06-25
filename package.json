@@ -1,6 +1,6 @@
 {
   "name": "@tropass/mcp-installer",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Installer for configuring agents to use the Tropass remote MCP gateway.",
   "license": "MIT",
   "type": "module",
