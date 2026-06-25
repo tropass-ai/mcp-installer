@@ -16,7 +16,7 @@ npx -y @tropass/mcp-installer
 
 The CLI asks for:
 
-- MCP client: Codex, Claude, Cursor, OpenCode, VS Code, or generic;
+- MCP client: Codex, Claude, Cursor, OpenCode, or VS Code;
 - install scope: `project` or `global`;
 - Tropass MCP URL;
 - Tropass API token.
@@ -29,7 +29,6 @@ npx -y @tropass/mcp-installer cursor
 npx -y @tropass/mcp-installer vscode
 npx -y @tropass/mcp-installer claude
 npx -y @tropass/mcp-installer opencode
-npx -y @tropass/mcp-installer generic
 ```
 
 ## Non-Interactive Install
@@ -58,7 +57,6 @@ Project installs:
 - VS Code: `.vscode/mcp.json` and `.github/copilot-instructions.md`
 - Claude: `.mcp.json` and `CLAUDE.md`
 - OpenCode: `opencode.json` and `AGENTS.md`
-- Generic: `mcp.json` and `AGENTS.md`
 
 Global installs:
 
@@ -67,7 +65,6 @@ Global installs:
 - VS Code: user `mcp.json` and `copilot-instructions.md`
 - Claude: Claude desktop config and `tropass-mcp-instructions.md`
 - OpenCode: `~/.config/opencode/mcp.json` or `%APPDATA%\opencode\mcp.json`, and `AGENTS.md`
-- Generic: user config under `~/.config/mcp-installer/` or `%APPDATA%\mcp-installer\`
 
 The installer preserves existing config entries and uses managed instruction blocks where native instruction files are shared with user content.
 

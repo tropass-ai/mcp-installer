@@ -50,12 +50,6 @@ OpenCode project config:
 npx -y @tropass/mcp-installer opencode
 ```
 
-Generic `mcp.json` в текущей директории:
-
-```bash
-npx -y @tropass/mcp-installer generic
-```
-
 ## Non-interactive install
 
 ```bash
@@ -75,7 +69,7 @@ npx -y @tropass/mcp-installer codex --local --token "your-api-token" --yes
 
 ## Куда пишутся файлы
 
-По умолчанию installer спрашивает scope. С `--yes` используются defaults: `project` для Codex, Claude, Cursor, OpenCode, VS Code и generic.
+По умолчанию installer спрашивает scope. С `--yes` используются defaults: `project` для Codex, Claude, Cursor, OpenCode и VS Code.
 
 Project install:
 
@@ -95,10 +89,6 @@ Project install:
 - OpenCode:
   - config: `opencode.json` в текущем проекте;
   - instructions: `AGENTS.md`;
-- generic:
-  - config: `mcp.json` в текущей директории;
-  - instructions: `AGENTS.md` в текущей директории.
-
 Global install:
 
 - Codex:
@@ -122,15 +112,10 @@ Global install:
   - config on macOS/Linux: `~/.config/opencode/mcp.json`;
   - config on Windows: `%APPDATA%\opencode\mcp.json`;
   - instructions: `AGENTS.md` рядом с config;
-- generic:
-  - config on macOS/Linux: `~/.config/mcp-installer/mcp.json`;
-  - config on Windows: `%APPDATA%\mcp-installer\mcp.json`;
-  - instructions: `AGENTS.md` рядом с config.
-
 Для `AGENTS.md`, `CLAUDE.md`, `.github/copilot-instructions.md`, VS Code user instructions и Codex `config.toml` installer использует managed block и не стирает существующие инструкции.
 
 Можно указать путь явно:
 
 ```bash
-npx -y @tropass/mcp-installer generic --scope project --config ./my-mcp.json
+npx -y @tropass/mcp-installer opencode --scope project --config ./my-mcp.json
 ```

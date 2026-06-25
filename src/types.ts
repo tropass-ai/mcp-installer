@@ -1,4 +1,4 @@
-export type InstallClient = "codex" | "cursor" | "vscode" | "claude" | "opencode" | "generic";
+export type InstallClient = "codex" | "cursor" | "vscode" | "claude" | "opencode";
 export type InstallScope = "project" | "global";
 
 export type RawInstallOptions = {

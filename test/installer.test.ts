@@ -272,26 +272,6 @@ Keep this too.
     expect(instructions).toContain(MANAGED_INSTRUCTIONS_END);
   });
 
-  it("writes generic MCP config with timeout", () => {
-    const projectDir = createTempDir();
-
-    const result = installTropassMcp({
-      client: "generic",
-      projectDir,
-      mcpUrl: TEST_MCP_URL,
-      apiToken: TEST_API_TOKEN,
-    });
-
-    const config = readJson(result.configPath);
-    expect(config.mcpServers.tropass).toEqual({
-      url: TEST_MCP_URL,
-      headers: {
-        "X-API-TOKEN": TEST_API_TOKEN,
-      },
-      timeout: 900,
-    });
-  });
-
   it("rejects unsupported clients", () => {
     expect(() =>
       installTropassMcp({

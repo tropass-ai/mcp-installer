@@ -17,8 +17,6 @@ import {
   resolveClaudeDesktopConfigPath,
   resolveCursorConfigPath,
   resolveCursorRulesPath,
-  resolveGenericConfigPath,
-  resolveGenericInstructionPath,
   resolveOpenCodeConfigPath,
   resolveOpenCodeInstructionPath,
   resolveVSCodeUserConfigPath,
@@ -187,9 +185,6 @@ function resolveConfigPath(client: InstallClient, options: ValidatedInstallOptio
   if (client === "opencode") {
     return options.scope === "global" ? resolveOpenCodeConfigPath() : path.join(projectDir, "opencode.json");
   }
-  if (client === "generic") {
-    return options.scope === "global" ? resolveGenericConfigPath() : path.join(projectDir, "mcp.json");
-  }
   return resolveClaudeDesktopConfigPath();
 }
 
@@ -213,9 +208,6 @@ function resolveInstructionPath(client: InstallClient, options: ValidatedInstall
   }
   if (client === "opencode") {
     return options.scope === "global" ? resolveOpenCodeInstructionPath() : path.join(projectDir, "AGENTS.md");
-  }
-  if (client === "generic") {
-    return options.scope === "global" ? resolveGenericInstructionPath() : path.join(projectDir, "AGENTS.md");
   }
   return path.join(path.dirname(configPath), "tropass-mcp-instructions.md");
 }
@@ -319,7 +311,7 @@ function installInstructions(client: InstallClient, scope: InstallScope, instruc
   }
 
   const instructionContent = buildInstructionContent(client);
-  if (client === "vscode" || client === "opencode" || client === "generic" || (client === "claude" && scope === "project")) {
+  if (client === "vscode" || client === "opencode" || (client === "claude" && scope === "project")) {
     upsertManagedInstructionBlock(instructionPath, instructionContent);
     return;
   }

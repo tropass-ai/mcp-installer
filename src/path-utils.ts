@@ -52,19 +52,6 @@ export function resolveOpenCodeInstructionPath(): string {
   return path.join(path.dirname(resolveOpenCodeConfigPath()), "AGENTS.md");
 }
 
-export function resolveGenericConfigPath(): string {
-  const home = process.env.HOME || process.env.USERPROFILE || "";
-  if (process.platform === "win32") {
-    const appData = process.env.APPDATA || path.join(home, "AppData", "Roaming");
-    return path.join(appData, "mcp-installer", "mcp.json");
-  }
-  return path.join(home, ".config", "mcp-installer", "mcp.json");
-}
-
-export function resolveGenericInstructionPath(): string {
-  return path.join(path.dirname(resolveGenericConfigPath()), "AGENTS.md");
-}
-
 export function resolveVSCodeUserConfigPath(): string {
   if (process.platform === "darwin") {
     return path.join(process.env.HOME || "", "Library", "Application Support", "Code", "User", "mcp.json");

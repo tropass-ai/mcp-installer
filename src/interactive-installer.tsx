@@ -28,8 +28,7 @@ const CLIENT_ITEMS: Array<{ label: string; value: InstallClient }> = [
   { label: "Claude", value: "claude" },
   { label: "Cursor", value: "cursor" },
   { label: "OpenCode", value: "opencode" },
-  { label: "VS Code", value: "vscode" },
-  { label: "Generic MCP client", value: "generic" }
+  { label: "VS Code", value: "vscode" }
 ];
 
 const SCOPE_ITEMS: Array<{ label: string; value: InstallScope }> = [
