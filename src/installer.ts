@@ -37,6 +37,17 @@ type ServerConfig = {
   timeout: number;
 };
 
+type ClaudeCodeServerConfig = ServerConfig & {
+  type: "http";
+};
+
+type OpenCodeServerConfig = {
+  type: "remote";
+  enabled: true;
+  url: string;
+  headers: Record<string, string>;
+};
+
 const MANAGED_CODEX_CONFIG_BEGIN = "# BEGIN TROPASS MCP CONFIG";
 const MANAGED_CODEX_CONFIG_END = "# END TROPASS MCP CONFIG";
 const TOOL_TIMEOUT_SECONDS = 15 * 60;
@@ -230,6 +241,24 @@ function buildServerConfig(mcpUrl: string, apiToken: string): ServerConfig {
   };
 }
 
+function buildClaudeCodeServerConfig(mcpUrl: string, apiToken: string): ClaudeCodeServerConfig {
+  return {
+    type: "http",
+    ...buildServerConfig(mcpUrl, apiToken)
+  };
+}
+
+function buildOpenCodeServerConfig(mcpUrl: string, apiToken: string): OpenCodeServerConfig {
+  return {
+    type: "remote",
+    enabled: true,
+    url: mcpUrl,
+    headers: {
+      [DEFAULT_TOKEN_HEADER]: apiToken
+    }
+  };
+}
+
 function installServerConfig(client: InstallClient, configPath: string, mcpUrl: string, apiToken: string): void {
   if (client === "codex") {
     installCodexServerConfig(configPath, mcpUrl, apiToken);
@@ -242,7 +271,7 @@ function installServerConfig(client: InstallClient, configPath: string, mcpUrl: 
   if (client === "opencode") {
     payload.mcp = {
       ...readObjectProperty(payload, "mcp"),
-      tropass: serverConfig
+      tropass: buildOpenCodeServerConfig(mcpUrl, apiToken)
     };
     fs.mkdirSync(path.dirname(configPath), { recursive: true });
     fs.writeFileSync(configPath, `${JSON.stringify(payload, null, 2)}\n`);
@@ -251,7 +280,7 @@ function installServerConfig(client: InstallClient, configPath: string, mcpUrl: 
 
   payload.mcpServers = {
     ...readObjectProperty(payload, "mcpServers"),
-    tropass: serverConfig
+    tropass: client === "claude" ? buildClaudeCodeServerConfig(mcpUrl, apiToken) : serverConfig
   };
 
   fs.mkdirSync(path.dirname(configPath), { recursive: true });

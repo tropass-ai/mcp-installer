@@ -165,6 +165,7 @@ describe("installTropassMcp", () => {
 
     expect(result.configPath).toBe(path.join(homeDir, ".claude.json"));
     expect(result.instructionPath).toBe(instructionsPath);
+    expect(readJson(result.configPath).mcpServers.tropass.type).toBe("http");
     expect(readJson(result.configPath).mcpServers.tropass.headers["X-API-TOKEN"]).toBe(
       TEST_API_TOKEN,
     );
@@ -190,6 +191,7 @@ describe("installTropassMcp", () => {
     expect(result.scope).toBe("project");
     expect(result.configPath).toBe(path.join(projectDir, ".mcp.json"));
     expect(result.instructionPath).toBe(path.join(projectDir, "CLAUDE.md"));
+    expect(readJson(result.configPath).mcpServers.tropass.type).toBe("http");
     expect(readJson(result.configPath).mcpServers.tropass.timeout).toBe(900);
 
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
@@ -227,11 +229,12 @@ describe("installTropassMcp", () => {
     expect(config.theme).toBe("system");
     expect(config.mcp.existing.url).toBe("https://existing.test/mcp");
     expect(config.mcp.tropass).toEqual({
+      type: "remote",
+      enabled: true,
       url: TEST_MCP_URL,
       headers: {
         "X-API-TOKEN": TEST_API_TOKEN,
-      },
-      timeout: 900,
+      }
     });
 
     const instructions = fs.readFileSync(instructionsPath, "utf8");
@@ -255,7 +258,7 @@ describe("installTropassMcp", () => {
 
     expect(result.configPath).toBe(path.join(homeDir, ".config", "opencode", "opencode.json"));
     expect(result.instructionPath).toBe(path.join(homeDir, ".config", "opencode", "AGENTS.md"));
-    expect(readJson(result.configPath).mcp.tropass.timeout).toBe(900);
+    expect(readJson(result.configPath).mcp.tropass.enabled).toBe(true);
   });
 
   it("rejects unsupported clients", () => {

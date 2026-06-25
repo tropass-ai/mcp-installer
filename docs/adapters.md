@@ -16,6 +16,7 @@ Installer спросит MCP client и scope (`project` или `global`), зат
 {
   "mcpServers": {
     "tropass": {
+      "type": "http",
       "url": "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp",
       "headers": {
         "X-API-TOKEN": "your-api-token"
@@ -28,4 +29,4 @@ Installer спросит MCP client и scope (`project` или `global`), зат
 
 Подробные пути для каждого клиента описаны в [install.md](install.md).
 
-OpenCode использует тот же server payload, но хранит его в секции `mcp` файла `opencode.json`.
+OpenCode хранит server payload в секции `mcp` файла `opencode.json` и требует `type: "remote"` и `enabled: true`.
