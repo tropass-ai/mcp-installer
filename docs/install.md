@@ -90,10 +90,8 @@ Global install:
   - config: `~/.cursor/mcp.json`;
   - instructions: `~/.cursor/rules/tropass-mcp.mdc`;
 - Claude:
-  - config on macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`;
-  - config on Windows: `%APPDATA%\Claude\claude_desktop_config.json`;
-  - config on Linux: `~/.config/Claude/claude_desktop_config.json`;
-  - instructions: `tropass-mcp-instructions.md` рядом с config;
+  - config: `~/.claude.json`;
+  - instructions: `~/.claude/CLAUDE.md`;
 - OpenCode:
   - config on macOS/Linux: `~/.config/opencode/mcp.json`;
   - config on Windows: `%APPDATA%\opencode\mcp.json`;

@@ -60,7 +60,7 @@ Global installs:
 
 - Codex: `~/.codex/config.toml`, `~/.codex/skills/tropass-gateway/SKILL.md`, and `~/.codex/skills/agent-response-display/SKILL.md`
 - Cursor: `~/.cursor/mcp.json` and `~/.cursor/rules/tropass-mcp.mdc`
-- Claude: Claude desktop config and `tropass-mcp-instructions.md`
+- Claude: `~/.claude.json` and `~/.claude/CLAUDE.md`
 - OpenCode: `~/.config/opencode/mcp.json` or `%APPDATA%\opencode\mcp.json`, and `AGENTS.md`
 
 The installer preserves existing config entries and uses managed instruction blocks where native instruction files are shared with user content.

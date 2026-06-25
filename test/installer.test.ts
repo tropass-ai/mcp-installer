@@ -148,33 +148,33 @@ describe("installTropassMcp", () => {
     expect(instructions).toContain("Tropass MCP Instructions");
   });
 
-  it("writes Claude config to explicit path and instructions next to it", () => {
-    const tempDir = createTempDir();
-    const configPath = path.join(
-      tempDir,
-      "Claude",
-      "claude_desktop_config.json",
-    );
+  it("writes Claude global config and user memory for terminal agent installs", () => {
+    const homeDir = createTempDir();
+    process.env.HOME = homeDir;
+    process.env.USERPROFILE = homeDir;
+    const instructionsPath = path.join(homeDir, ".claude", "CLAUDE.md");
+    fs.mkdirSync(path.dirname(instructionsPath), {recursive: true});
+    fs.writeFileSync(instructionsPath, "# User memory\n");
 
     const result = installTropassMcp({
       client: "claude",
       scope: "global",
-      configPath,
       mcpUrl: TEST_MCP_URL,
       apiToken: TEST_API_TOKEN,
     });
 
-    expect(result.configPath).toBe(configPath);
-    expect(result.instructionPath).toBe(
-      path.join(tempDir, "Claude", "tropass-mcp-instructions.md"),
-    );
-    expect(readJson(configPath).mcpServers.tropass.headers["X-API-TOKEN"]).toBe(
+    expect(result.configPath).toBe(path.join(homeDir, ".claude.json"));
+    expect(result.instructionPath).toBe(instructionsPath);
+    expect(readJson(result.configPath).mcpServers.tropass.headers["X-API-TOKEN"]).toBe(
       TEST_API_TOKEN,
     );
-    expect(readJson(configPath).mcpServers.tropass.timeout).toBe(900);
-    expect(fs.readFileSync(result.instructionPath, "utf8")).toContain(
-      "Claude project or custom instructions",
-    );
+    expect(readJson(result.configPath).mcpServers.tropass.timeout).toBe(900);
+
+    const instructions = fs.readFileSync(result.instructionPath, "utf8");
+    expect(instructions).toContain("# User memory");
+    expect(instructions).toContain(MANAGED_INSTRUCTIONS_BEGIN);
+    expect(instructions).toContain("Claude project or custom instructions");
+    expect(instructions).toContain(MANAGED_INSTRUCTIONS_END);
   });
 
   it("defaults Claude to project config for terminal agent installs", () => {

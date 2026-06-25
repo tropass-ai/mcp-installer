@@ -12,15 +12,12 @@ export function expandHome(filePath: string): string {
   return filePath;
 }
 
-export function resolveClaudeDesktopConfigPath(): string {
-  if (process.platform === "darwin") {
-    return path.join(process.env.HOME || "", "Library", "Application Support", "Claude", "claude_desktop_config.json");
-  }
-  if (process.platform === "win32") {
-    const appData = process.env.APPDATA || path.join(process.env.USERPROFILE || "", "AppData", "Roaming");
-    return path.join(appData, "Claude", "claude_desktop_config.json");
-  }
-  return path.join(process.env.HOME || "", ".config", "Claude", "claude_desktop_config.json");
+export function resolveClaudeCodeConfigPath(): string {
+  return path.join(process.env.HOME || process.env.USERPROFILE || "", ".claude.json");
+}
+
+export function resolveClaudeCodeInstructionPath(): string {
+  return path.join(process.env.HOME || process.env.USERPROFILE || "", ".claude", "CLAUDE.md");
 }
 
 export function resolveCodexConfigPath(): string {

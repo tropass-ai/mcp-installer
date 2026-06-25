@@ -14,7 +14,8 @@ import {
   expandHome,
   resolveCodexConfigPath,
   resolveCodexSkillsPath,
-  resolveClaudeDesktopConfigPath,
+  resolveClaudeCodeConfigPath,
+  resolveClaudeCodeInstructionPath,
   resolveCursorConfigPath,
   resolveCursorRulesPath,
   resolveOpenCodeConfigPath,
@@ -69,7 +70,7 @@ export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult 
   const configPath = resolveConfigPath(options.client, options);
   installServerConfig(options.client, configPath, options.mcpUrl, options.apiToken);
 
-  const instructionPath = resolveInstructionPath(options.client, options, configPath);
+  const instructionPath = resolveInstructionPath(options.client, options);
   installInstructions(options.client, options.scope, instructionPath);
 
   return {
@@ -175,15 +176,15 @@ function resolveConfigPath(client: InstallClient, options: ValidatedInstallOptio
     return options.scope === "global" ? resolveCursorConfigPath() : path.join(projectDir, ".cursor", "mcp.json");
   }
   if (client === "claude") {
-    return options.scope === "global" ? resolveClaudeDesktopConfigPath() : path.join(projectDir, ".mcp.json");
+    return options.scope === "global" ? resolveClaudeCodeConfigPath() : path.join(projectDir, ".mcp.json");
   }
   if (client === "opencode") {
     return options.scope === "global" ? resolveOpenCodeConfigPath() : path.join(projectDir, "opencode.json");
   }
-  return resolveClaudeDesktopConfigPath();
+  throw new Error(`Unsupported client '${client}'.`);
 }
 
-function resolveInstructionPath(client: InstallClient, options: ValidatedInstallOptions, configPath: string): string {
+function resolveInstructionPath(client: InstallClient, options: ValidatedInstallOptions): string {
   const projectDir = path.resolve(expandHome(options.projectDir));
   if (client === "codex") {
     const skillsPath = options.scope === "global" ? resolveCodexSkillsPath() : path.join(projectDir, ".codex", "skills");
@@ -193,13 +194,13 @@ function resolveInstructionPath(client: InstallClient, options: ValidatedInstall
     const rulesPath = options.scope === "global" ? resolveCursorRulesPath() : path.join(projectDir, ".cursor", "rules");
     return path.join(rulesPath, "tropass-mcp.mdc");
   }
-  if (client === "claude" && options.scope === "project") {
-    return path.join(projectDir, "CLAUDE.md");
+  if (client === "claude") {
+    return options.scope === "global" ? resolveClaudeCodeInstructionPath() : path.join(projectDir, "CLAUDE.md");
   }
   if (client === "opencode") {
     return options.scope === "global" ? resolveOpenCodeInstructionPath() : path.join(projectDir, "AGENTS.md");
   }
-  return path.join(path.dirname(configPath), "tropass-mcp-instructions.md");
+  throw new Error(`Unsupported client '${client}'.`);
 }
 
 function readJsonFile(filePath: string): JsonObject {
@@ -291,7 +292,7 @@ function installInstructions(client: InstallClient, scope: InstallScope, instruc
   }
 
   const instructionContent = buildInstructionContent(client);
-  if (client === "opencode" || (client === "claude" && scope === "project")) {
+  if (client === "opencode" || client === "claude") {
     upsertManagedInstructionBlock(instructionPath, instructionContent);
     return;
   }
