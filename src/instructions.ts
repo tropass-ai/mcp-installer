@@ -87,6 +87,11 @@ ${TROPASS_MCP_INSTRUCTIONS}`;
 Add these instructions to your Claude project or custom instructions together with the Tropass MCP server config.
 `;
   }
+  if (client === "opencode") {
+    return `${TROPASS_MCP_INSTRUCTIONS}
+Use these instructions with OpenCode together with the Tropass MCP server config.
+`;
+  }
   return TROPASS_MCP_INSTRUCTIONS;
 }
 

@@ -200,6 +200,7 @@ Keep this too.
 
     const result = installTropassMcp({
       client: "claude",
+      scope: "global",
       configPath,
       mcpUrl: TEST_MCP_URL,
       apiToken: TEST_API_TOKEN,
@@ -216,6 +217,59 @@ Keep this too.
     expect(fs.readFileSync(result.instructionPath, "utf8")).toContain(
       "Claude project or custom instructions",
     );
+  });
+
+  it("defaults Claude to project config for terminal agent installs", () => {
+    const projectDir = createTempDir();
+
+    const result = installTropassMcp({
+      client: "claude",
+      projectDir,
+      mcpUrl: TEST_MCP_URL,
+      apiToken: TEST_API_TOKEN,
+    });
+
+    expect(result.scope).toBe("project");
+    expect(result.configPath).toBe(path.join(projectDir, ".mcp.json"));
+    expect(result.instructionPath).toBe(path.join(projectDir, "CLAUDE.md"));
+    expect(readJson(result.configPath).mcpServers.tropass.timeout).toBe(900);
+
+    const instructions = fs.readFileSync(result.instructionPath, "utf8");
+    expect(instructions).toContain(MANAGED_INSTRUCTIONS_BEGIN);
+    expect(instructions).toContain("Claude project or custom instructions");
+    expect(instructions).toContain(MANAGED_INSTRUCTIONS_END);
+  });
+
+  it("writes OpenCode project config and managed AGENTS instructions", () => {
+    const projectDir = createTempDir();
+    const instructionsPath = path.join(projectDir, "AGENTS.md");
+    fs.writeFileSync(instructionsPath, "# Existing agent notes\n");
+
+    const result = installTropassMcp({
+      client: "opencode",
+      projectDir,
+      mcpUrl: TEST_MCP_URL,
+      apiToken: TEST_API_TOKEN,
+    });
+
+    expect(result.scope).toBe("project");
+    expect(result.configPath).toBe(path.join(projectDir, "opencode.json"));
+    expect(result.instructionPath).toBe(instructionsPath);
+
+    const config = readJson(result.configPath);
+    expect(config.mcpServers.tropass).toEqual({
+      url: TEST_MCP_URL,
+      headers: {
+        "X-API-TOKEN": TEST_API_TOKEN,
+      },
+      timeout: 900,
+    });
+
+    const instructions = fs.readFileSync(instructionsPath, "utf8");
+    expect(instructions).toContain("# Existing agent notes");
+    expect(instructions).toContain(MANAGED_INSTRUCTIONS_BEGIN);
+    expect(instructions).toContain("Use these instructions with OpenCode");
+    expect(instructions).toContain(MANAGED_INSTRUCTIONS_END);
   });
 
   it("writes generic MCP config with timeout", () => {

@@ -8,5 +8,6 @@ export const SUPPORTED_INSTALL_CLIENTS = new Set<InstallClient>([
   "cursor",
   "vscode",
   "claude",
+  "opencode",
   "generic",
 ]);

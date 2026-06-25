@@ -27,6 +27,7 @@ const CLIENT_ITEMS: Array<{ label: string; value: InstallClient }> = [
   { label: "Codex", value: "codex" },
   { label: "Claude", value: "claude" },
   { label: "Cursor", value: "cursor" },
+  { label: "OpenCode", value: "opencode" },
   { label: "VS Code", value: "vscode" },
   { label: "Generic MCP client", value: "generic" }
 ];
@@ -186,7 +187,8 @@ function InstallerWizard({
 }
 
 function defaultScopeForClient(client: InstallClient): InstallScope {
-  return client === "claude" ? "global" : "project";
+  void client;
+  return "project";
 }
 
 function InstallResultView({ result }: { result: InstallResult }): React.JSX.Element {

@@ -19,6 +19,8 @@ import {
   resolveCursorRulesPath,
   resolveGenericConfigPath,
   resolveGenericInstructionPath,
+  resolveOpenCodeConfigPath,
+  resolveOpenCodeInstructionPath,
   resolveVSCodeUserConfigPath,
   resolveVSCodeUserInstructionPath
 } from "./path-utils.js";
@@ -146,7 +148,8 @@ function normalizeScopeOption(options: RawInstallOptions): string | undefined {
 }
 
 export function resolveDefaultScope(client: InstallClient): InstallScope {
-  return client === "claude" ? "global" : "project";
+  void client;
+  return "project";
 }
 
 function validateInstallScope(value: string): InstallScope {
@@ -181,6 +184,9 @@ function resolveConfigPath(client: InstallClient, options: ValidatedInstallOptio
   if (client === "claude") {
     return options.scope === "global" ? resolveClaudeDesktopConfigPath() : path.join(projectDir, ".mcp.json");
   }
+  if (client === "opencode") {
+    return options.scope === "global" ? resolveOpenCodeConfigPath() : path.join(projectDir, "opencode.json");
+  }
   if (client === "generic") {
     return options.scope === "global" ? resolveGenericConfigPath() : path.join(projectDir, "mcp.json");
   }
@@ -204,6 +210,9 @@ function resolveInstructionPath(client: InstallClient, options: ValidatedInstall
   }
   if (client === "claude" && options.scope === "project") {
     return path.join(projectDir, "CLAUDE.md");
+  }
+  if (client === "opencode") {
+    return options.scope === "global" ? resolveOpenCodeInstructionPath() : path.join(projectDir, "AGENTS.md");
   }
   if (client === "generic") {
     return options.scope === "global" ? resolveGenericInstructionPath() : path.join(projectDir, "AGENTS.md");
@@ -310,7 +319,7 @@ function installInstructions(client: InstallClient, scope: InstallScope, instruc
   }
 
   const instructionContent = buildInstructionContent(client);
-  if (client === "vscode" || client === "generic" || (client === "claude" && scope === "project")) {
+  if (client === "vscode" || client === "opencode" || client === "generic" || (client === "claude" && scope === "project")) {
     upsertManagedInstructionBlock(instructionPath, instructionContent);
     return;
   }

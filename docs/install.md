@@ -38,10 +38,16 @@ VS Code workspace config:
 npx -y @tropass/mcp-installer vscode
 ```
 
-Claude global config:
+Claude project config:
 
 ```bash
 npx -y @tropass/mcp-installer claude
+```
+
+OpenCode project config:
+
+```bash
+npx -y @tropass/mcp-installer opencode
 ```
 
 Generic `mcp.json` в текущей директории:
@@ -69,7 +75,7 @@ npx -y @tropass/mcp-installer codex --local --token "your-api-token" --yes
 
 ## Куда пишутся файлы
 
-По умолчанию installer спрашивает scope. С `--yes` используются defaults: `project` для Codex, Cursor, VS Code и generic; `global` для Claude.
+По умолчанию installer спрашивает scope. С `--yes` используются defaults: `project` для Codex, Claude, Cursor, OpenCode, VS Code и generic.
 
 Project install:
 
@@ -86,6 +92,9 @@ Project install:
 - Claude:
   - config: `.mcp.json` в текущем проекте;
   - instructions: `CLAUDE.md`;
+- OpenCode:
+  - config: `opencode.json` в текущем проекте;
+  - instructions: `AGENTS.md`;
 - generic:
   - config: `mcp.json` в текущей директории;
   - instructions: `AGENTS.md` в текущей директории.
@@ -109,6 +118,10 @@ Global install:
   - config on Windows: `%APPDATA%\Claude\claude_desktop_config.json`;
   - config on Linux: `~/.config/Claude/claude_desktop_config.json`;
   - instructions: `tropass-mcp-instructions.md` рядом с config;
+- OpenCode:
+  - config on macOS/Linux: `~/.config/opencode/mcp.json`;
+  - config on Windows: `%APPDATA%\opencode\mcp.json`;
+  - instructions: `AGENTS.md` рядом с config;
 - generic:
   - config on macOS/Linux: `~/.config/mcp-installer/mcp.json`;
   - config on Windows: `%APPDATA%\mcp-installer\mcp.json`;
