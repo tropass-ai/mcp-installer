@@ -239,6 +239,16 @@ function installServerConfig(client: InstallClient, configPath: string, mcpUrl: 
   const payload = readJsonFile(configPath);
   const serverConfig = buildServerConfig(mcpUrl, apiToken);
 
+  if (client === "opencode") {
+    payload.mcp = {
+      ...readObjectProperty(payload, "mcp"),
+      tropass: serverConfig
+    };
+    fs.mkdirSync(path.dirname(configPath), { recursive: true });
+    fs.writeFileSync(configPath, `${JSON.stringify(payload, null, 2)}\n`);
+    return;
+  }
+
   payload.mcpServers = {
     ...readObjectProperty(payload, "mcpServers"),
     tropass: serverConfig

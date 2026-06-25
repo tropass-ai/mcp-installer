@@ -61,7 +61,7 @@ Global installs:
 - Codex: `~/.codex/config.toml`, `~/.codex/skills/tropass-gateway/SKILL.md`, and `~/.codex/skills/agent-response-display/SKILL.md`
 - Cursor: `~/.cursor/mcp.json` and `~/.cursor/rules/tropass-mcp.mdc`
 - Claude: `~/.claude.json` and `~/.claude/CLAUDE.md`
-- OpenCode: `~/.config/opencode/mcp.json` or `%APPDATA%\opencode\mcp.json`, and `AGENTS.md`
+- OpenCode: `~/.config/opencode/opencode.json` or `%APPDATA%\opencode\opencode.json`, and `AGENTS.md`
 
 The installer preserves existing config entries and uses managed instruction blocks where native instruction files are shared with user content.
 
@@ -72,6 +72,22 @@ For clients that support remote MCP with custom headers:
 ```json
 {
   "mcpServers": {
+    "tropass": {
+      "url": "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp",
+      "headers": {
+        "X-API-TOKEN": "your-api-token"
+      },
+      "timeout": 900
+    }
+  }
+}
+```
+
+OpenCode stores MCP servers under the `mcp` key in `opencode.json`:
+
+```json
+{
+  "mcp": {
     "tropass": {
       "url": "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp",
       "headers": {

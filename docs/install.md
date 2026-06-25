@@ -93,13 +93,13 @@ Global install:
   - config: `~/.claude.json`;
   - instructions: `~/.claude/CLAUDE.md`;
 - OpenCode:
-  - config on macOS/Linux: `~/.config/opencode/mcp.json`;
-  - config on Windows: `%APPDATA%\opencode\mcp.json`;
+  - config on macOS/Linux: `~/.config/opencode/opencode.json`;
+  - config on Windows: `%APPDATA%\opencode\opencode.json`;
   - instructions: `AGENTS.md` рядом с config;
 Для `AGENTS.md`, `CLAUDE.md` и Codex `config.toml` installer использует managed block и не стирает существующие инструкции.
 
 Можно указать путь явно:
 
 ```bash
-npx -y @tropass/mcp-installer opencode --scope project --config ./my-mcp.json
+npx -y @tropass/mcp-installer opencode --scope project --config ./opencode.json
 ```

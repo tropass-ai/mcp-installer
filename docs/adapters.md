@@ -27,3 +27,5 @@ Installer спросит MCP client и scope (`project` или `global`), зат
 ```
 
 Подробные пути для каждого клиента описаны в [install.md](install.md).
+
+OpenCode использует тот же server payload, но хранит его в секции `mcp` файла `opencode.json`.

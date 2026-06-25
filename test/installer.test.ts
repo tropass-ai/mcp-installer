@@ -200,7 +200,16 @@ describe("installTropassMcp", () => {
 
   it("writes OpenCode project config and managed AGENTS instructions", () => {
     const projectDir = createTempDir();
+    const configPath = path.join(projectDir, "opencode.json");
     const instructionsPath = path.join(projectDir, "AGENTS.md");
+    writeJson(configPath, {
+      theme: "system",
+      mcp: {
+        existing: {
+          url: "https://existing.test/mcp",
+        },
+      },
+    });
     fs.writeFileSync(instructionsPath, "# Existing agent notes\n");
 
     const result = installTropassMcp({
@@ -211,11 +220,13 @@ describe("installTropassMcp", () => {
     });
 
     expect(result.scope).toBe("project");
-    expect(result.configPath).toBe(path.join(projectDir, "opencode.json"));
+    expect(result.configPath).toBe(configPath);
     expect(result.instructionPath).toBe(instructionsPath);
 
     const config = readJson(result.configPath);
-    expect(config.mcpServers.tropass).toEqual({
+    expect(config.theme).toBe("system");
+    expect(config.mcp.existing.url).toBe("https://existing.test/mcp");
+    expect(config.mcp.tropass).toEqual({
       url: TEST_MCP_URL,
       headers: {
         "X-API-TOKEN": TEST_API_TOKEN,
@@ -228,6 +239,23 @@ describe("installTropassMcp", () => {
     expect(instructions).toContain(MANAGED_INSTRUCTIONS_BEGIN);
     expect(instructions).toContain("Use these instructions with OpenCode");
     expect(instructions).toContain(MANAGED_INSTRUCTIONS_END);
+  });
+
+  it("writes OpenCode global config to opencode.json", () => {
+    const homeDir = createTempDir();
+    process.env.HOME = homeDir;
+    process.env.USERPROFILE = homeDir;
+
+    const result = installTropassMcp({
+      client: "opencode",
+      scope: "global",
+      mcpUrl: TEST_MCP_URL,
+      apiToken: TEST_API_TOKEN,
+    });
+
+    expect(result.configPath).toBe(path.join(homeDir, ".config", "opencode", "opencode.json"));
+    expect(result.instructionPath).toBe(path.join(homeDir, ".config", "opencode", "AGENTS.md"));
+    expect(readJson(result.configPath).mcp.tropass.timeout).toBe(900);
   });
 
   it("rejects unsupported clients", () => {
