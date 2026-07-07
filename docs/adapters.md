@@ -19,7 +19,7 @@ Installer спросит MCP client и scope (`project` или `global`), зат
       "type": "http",
       "url": "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp",
       "headers": {
-        "X-API-TOKEN": "your-api-token"
+        "Authorization": "Bearer your-api-token"
       },
       "timeout": 900
     }

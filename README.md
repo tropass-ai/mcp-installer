@@ -76,7 +76,7 @@ Global install:
       "type": "http",
       "url": "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp",
       "headers": {
-        "X-API-TOKEN": "your-api-token"
+        "Authorization": "Bearer your-api-token"
       },
       "timeout": 900
     }
@@ -96,7 +96,7 @@ OpenCode хранит MCP servers в секции `mcp` файла `opencode.jso
       "enabled": true,
       "url": "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp",
       "headers": {
-        "X-API-TOKEN": "your-api-token"
+        "Authorization": "Bearer your-api-token"
       }
     }
   }

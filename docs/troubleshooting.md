@@ -11,7 +11,7 @@
 
 ## 403 or invalid token
 
-Gateway не получил валидный `X-API-TOKEN`. Проверьте direct MCP config:
+Gateway не получил валидный `Authorization: Bearer <token>`. Проверьте direct MCP config:
 
 ```bash
 echo "$TROPASS_MCP_URL"

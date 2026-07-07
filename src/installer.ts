@@ -235,7 +235,7 @@ function buildServerConfig(mcpUrl: string, apiToken: string): ServerConfig {
   return {
     url: mcpUrl,
     headers: {
-      [DEFAULT_TOKEN_HEADER]: apiToken
+      [DEFAULT_TOKEN_HEADER]: buildBearerToken(apiToken)
     },
     timeout: TOOL_TIMEOUT_SECONDS
   };
@@ -254,7 +254,7 @@ function buildOpenCodeServerConfig(mcpUrl: string, apiToken: string): OpenCodeSe
     enabled: true,
     url: mcpUrl,
     headers: {
-      [DEFAULT_TOKEN_HEADER]: apiToken
+      [DEFAULT_TOKEN_HEADER]: buildBearerToken(apiToken)
     }
   };
 }
@@ -292,7 +292,7 @@ function installCodexServerConfig(configPath: string, mcpUrl: string, apiToken: 
     MANAGED_CODEX_CONFIG_BEGIN,
     "[mcp_servers.tropass]",
     `url = ${stringifyTomlValue(mcpUrl)}`,
-    `http_headers = { ${stringifyTomlKey(DEFAULT_TOKEN_HEADER)} = ${stringifyTomlValue(apiToken)} }`,
+    `http_headers = { ${stringifyTomlKey(DEFAULT_TOKEN_HEADER)} = ${stringifyTomlValue(buildBearerToken(apiToken))} }`,
     `tool_timeout_sec = ${TOOL_TIMEOUT_SECONDS}`,
     MANAGED_CODEX_CONFIG_END
   ].join("\n");
@@ -322,6 +322,10 @@ function stringifyTomlKey(value: string): string {
 
 function stringifyTomlValue(value: string): string {
   return JSON.stringify(value);
+}
+
+function buildBearerToken(apiToken: string): string {
+  return apiToken.startsWith("Bearer ") ? apiToken : `Bearer ${apiToken}`;
 }
 
 function installInstructions(client: InstallClient, scope: InstallScope, instructionPath: string): void {
