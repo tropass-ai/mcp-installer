@@ -52,7 +52,7 @@ describe("installTropassMcp", () => {
     expect(config).toContain("[mcp_servers.tropass]");
     expect(config).toContain(`url = "${TEST_MCP_URL}"`);
     expect(config).toContain(
-      `http_headers = { "X-API-TOKEN" = "${TEST_API_TOKEN}" }`,
+      `http_headers = { "Authorization" = "Bearer ${TEST_API_TOKEN}" }`,
     );
     expect(config).toContain("tool_timeout_sec = 900");
 
@@ -138,7 +138,7 @@ describe("installTropassMcp", () => {
     expect(config.mcpServers.tropass).toEqual({
       url: TEST_MCP_URL,
       headers: {
-        "X-API-TOKEN": TEST_API_TOKEN,
+        Authorization: `Bearer ${TEST_API_TOKEN}`,
       },
       timeout: 900,
     });
@@ -146,6 +146,22 @@ describe("installTropassMcp", () => {
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
     expect(instructions).toContain("alwaysApply: true");
     expect(instructions).toContain("Tropass MCP Instructions");
+  });
+
+  it("does not duplicate an existing Bearer prefix", () => {
+    const projectDir = createTempDir();
+    const configPath = path.join(projectDir, ".cursor", "mcp.json");
+
+    installTropassMcp({
+      client: "cursor",
+      projectDir,
+      mcpUrl: TEST_MCP_URL,
+      apiToken: `Bearer ${TEST_API_TOKEN}`,
+    });
+
+    expect(readJson(configPath).mcpServers.tropass.headers.Authorization).toBe(
+      `Bearer ${TEST_API_TOKEN}`,
+    );
   });
 
   it("writes Claude global config and user memory for terminal agent installs", () => {
@@ -166,8 +182,8 @@ describe("installTropassMcp", () => {
     expect(result.configPath).toBe(path.join(homeDir, ".claude.json"));
     expect(result.instructionPath).toBe(instructionsPath);
     expect(readJson(result.configPath).mcpServers.tropass.type).toBe("http");
-    expect(readJson(result.configPath).mcpServers.tropass.headers["X-API-TOKEN"]).toBe(
-      TEST_API_TOKEN,
+    expect(readJson(result.configPath).mcpServers.tropass.headers.Authorization).toBe(
+      `Bearer ${TEST_API_TOKEN}`,
     );
     expect(readJson(result.configPath).mcpServers.tropass.timeout).toBe(900);
 
@@ -233,7 +249,7 @@ describe("installTropassMcp", () => {
       enabled: true,
       url: TEST_MCP_URL,
       headers: {
-        "X-API-TOKEN": TEST_API_TOKEN,
+        Authorization: `Bearer ${TEST_API_TOKEN}`,
       }
     });
 
