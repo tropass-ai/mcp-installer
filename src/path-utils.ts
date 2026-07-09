@@ -40,9 +40,9 @@ export function resolveOpenCodeConfigPath(): string {
   const home = process.env.HOME || process.env.USERPROFILE || "";
   if (process.platform === "win32") {
     const appData = process.env.APPDATA || path.join(home, "AppData", "Roaming");
-    return path.join(appData, "opencode", "opencode.json");
+    return path.join(appData, "opencode", "opencode.jsonc");
   }
-  return path.join(home, ".config", "opencode", "opencode.json");
+  return path.join(home, ".config", "opencode", "opencode.jsonc");
 }
 
 export function resolveOpenCodeInstructionPath(): string {

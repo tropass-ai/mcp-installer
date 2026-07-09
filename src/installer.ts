@@ -1,15 +1,9 @@
-import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-import { DEFAULT_MCP_URL, DEFAULT_TOKEN_HEADER, SUPPORTED_INSTALL_CLIENTS } from "./constants.js";
-import {
-  buildInstructionContent,
-  buildSkillContents,
-  MANAGED_INSTRUCTIONS_BEGIN,
-  MANAGED_INSTRUCTIONS_END
-} from "./instructions.js";
+import { DEFAULT_MCP_URL, SUPPORTED_INSTALL_CLIENTS } from "./constants.js";
 import { runInteractiveInstaller, writeInstallResult } from "./interactive-installer.js";
+import { resolveHarnessInstaller } from "./installers/index.js";
 import {
   expandHome,
   resolveCodexConfigPath,
@@ -26,31 +20,9 @@ import type {
   InstallOptions,
   InstallResult,
   InstallScope,
-  JsonObject,
   RawInstallOptions,
   ValidatedInstallOptions
 } from "./types.js";
-
-type ServerConfig = {
-  url: string;
-  headers: Record<string, string>;
-  timeout: number;
-};
-
-type ClaudeCodeServerConfig = ServerConfig & {
-  type: "http";
-};
-
-type OpenCodeServerConfig = {
-  type: "remote";
-  enabled: true;
-  url: string;
-  headers: Record<string, string>;
-};
-
-const MANAGED_CODEX_CONFIG_BEGIN = "# BEGIN TROPASS MCP CONFIG";
-const MANAGED_CODEX_CONFIG_END = "# END TROPASS MCP CONFIG";
-const TOOL_TIMEOUT_SECONDS = 15 * 60;
 
 export async function runInstall(rawOptions: RawInstallOptions = {}): Promise<void> {
   const options = normalizeInstallOptions(rawOptions);
@@ -77,12 +49,13 @@ export async function runInstall(rawOptions: RawInstallOptions = {}): Promise<vo
 
 export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult {
   const options = validateInstallOptions(normalizeInstallOptions(rawOptions));
+  const installer = resolveHarnessInstaller(options.client);
 
   const configPath = resolveConfigPath(options.client, options);
-  installServerConfig(options.client, configPath, options.mcpUrl, options.apiToken);
+  installer.installConfig(options, configPath);
 
   const instructionPath = resolveInstructionPath(options.client, options);
-  installInstructions(options.client, options.scope, instructionPath);
+  installer.installInstructions(options, instructionPath);
 
   return {
     client: options.client,
@@ -212,181 +185,4 @@ function resolveInstructionPath(client: InstallClient, options: ValidatedInstall
     return options.scope === "global" ? resolveOpenCodeInstructionPath() : path.join(projectDir, "AGENTS.md");
   }
   throw new Error(`Unsupported client '${client}'.`);
-}
-
-function readJsonFile(filePath: string): JsonObject {
-  if (!fs.existsSync(filePath)) {
-    return {};
-  }
-
-  const payload = fs.readFileSync(filePath, "utf8").trim();
-  if (!payload) {
-    return {};
-  }
-
-  const parsedPayload: unknown = JSON.parse(payload);
-  if (!isJsonObject(parsedPayload)) {
-    throw new Error(`${filePath} must contain a JSON object.`);
-  }
-  return parsedPayload;
-}
-
-function buildServerConfig(mcpUrl: string, apiToken: string): ServerConfig {
-  return {
-    url: mcpUrl,
-    headers: {
-      [DEFAULT_TOKEN_HEADER]: buildBearerToken(apiToken)
-    },
-    timeout: TOOL_TIMEOUT_SECONDS
-  };
-}
-
-function buildClaudeCodeServerConfig(mcpUrl: string, apiToken: string): ClaudeCodeServerConfig {
-  return {
-    type: "http",
-    ...buildServerConfig(mcpUrl, apiToken)
-  };
-}
-
-function buildOpenCodeServerConfig(mcpUrl: string, apiToken: string): OpenCodeServerConfig {
-  return {
-    type: "remote",
-    enabled: true,
-    url: mcpUrl,
-    headers: {
-      [DEFAULT_TOKEN_HEADER]: buildBearerToken(apiToken)
-    }
-  };
-}
-
-function installServerConfig(client: InstallClient, configPath: string, mcpUrl: string, apiToken: string): void {
-  if (client === "codex") {
-    installCodexServerConfig(configPath, mcpUrl, apiToken);
-    return;
-  }
-
-  const payload = readJsonFile(configPath);
-  const serverConfig = buildServerConfig(mcpUrl, apiToken);
-
-  if (client === "opencode") {
-    payload.mcp = {
-      ...readObjectProperty(payload, "mcp"),
-      tropass: buildOpenCodeServerConfig(mcpUrl, apiToken)
-    };
-    fs.mkdirSync(path.dirname(configPath), { recursive: true });
-    fs.writeFileSync(configPath, `${JSON.stringify(payload, null, 2)}\n`);
-    return;
-  }
-
-  payload.mcpServers = {
-    ...readObjectProperty(payload, "mcpServers"),
-    tropass: client === "claude" ? buildClaudeCodeServerConfig(mcpUrl, apiToken) : serverConfig
-  };
-
-  fs.mkdirSync(path.dirname(configPath), { recursive: true });
-  fs.writeFileSync(configPath, `${JSON.stringify(payload, null, 2)}\n`);
-}
-
-function installCodexServerConfig(configPath: string, mcpUrl: string, apiToken: string): void {
-  const managedBlock = [
-    MANAGED_CODEX_CONFIG_BEGIN,
-    "[mcp_servers.tropass]",
-    `url = ${stringifyTomlValue(mcpUrl)}`,
-    `http_headers = { ${stringifyTomlKey(DEFAULT_TOKEN_HEADER)} = ${stringifyTomlValue(buildBearerToken(apiToken))} }`,
-    `tool_timeout_sec = ${TOOL_TIMEOUT_SECONDS}`,
-    MANAGED_CODEX_CONFIG_END
-  ].join("\n");
-
-  if (!fs.existsSync(configPath)) {
-    writeTextFile(configPath, managedBlock);
-    return;
-  }
-
-  const existingContent = fs.readFileSync(configPath, "utf8");
-  const startIndex = existingContent.indexOf(MANAGED_CODEX_CONFIG_BEGIN);
-  const endIndex = existingContent.indexOf(MANAGED_CODEX_CONFIG_END);
-
-  if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
-    const before = existingContent.slice(0, startIndex).trimEnd();
-    const after = existingContent.slice(endIndex + MANAGED_CODEX_CONFIG_END.length).trimStart();
-    writeTextFile(configPath, [before, managedBlock, after].filter(Boolean).join("\n\n"));
-    return;
-  }
-
-  writeTextFile(configPath, `${existingContent.trimEnd()}\n\n${managedBlock}\n`);
-}
-
-function stringifyTomlKey(value: string): string {
-  return JSON.stringify(value);
-}
-
-function stringifyTomlValue(value: string): string {
-  return JSON.stringify(value);
-}
-
-function buildBearerToken(apiToken: string): string {
-  return apiToken.startsWith("Bearer ") ? apiToken : `Bearer ${apiToken}`;
-}
-
-function installInstructions(client: InstallClient, scope: InstallScope, instructionPath: string): void {
-  if (client === "codex") {
-    installCodexSkills(instructionPath);
-    return;
-  }
-
-  const instructionContent = buildInstructionContent(client);
-  if (client === "opencode" || client === "claude") {
-    upsertManagedInstructionBlock(instructionPath, instructionContent);
-    return;
-  }
-  writeTextFile(instructionPath, instructionContent);
-}
-
-function installCodexSkills(primaryInstructionPath: string): void {
-  const skillsPath = path.dirname(path.dirname(primaryInstructionPath));
-  for (const skillContent of buildSkillContents()) {
-    writeTextFile(path.join(skillsPath, skillContent.name, "SKILL.md"), skillContent.content);
-  }
-}
-
-function upsertManagedInstructionBlock(filePath: string, content: string): void {
-  const managedBlock = `${MANAGED_INSTRUCTIONS_BEGIN}\n${content.trim()}\n${MANAGED_INSTRUCTIONS_END}`;
-
-  if (!fs.existsSync(filePath)) {
-    writeTextFile(filePath, managedBlock);
-    return;
-  }
-
-  const existingContent = fs.readFileSync(filePath, "utf8");
-  const startIndex = existingContent.indexOf(MANAGED_INSTRUCTIONS_BEGIN);
-  const endIndex = existingContent.indexOf(MANAGED_INSTRUCTIONS_END);
-
-  if (startIndex !== -1 && endIndex !== -1 && endIndex > startIndex) {
-    const before = existingContent.slice(0, startIndex).trimEnd();
-    const after = existingContent.slice(endIndex + MANAGED_INSTRUCTIONS_END.length).trimStart();
-    writeTextFile(filePath, [before, managedBlock, after].filter(Boolean).join("\n\n"));
-    return;
-  }
-
-  writeTextFile(filePath, `${existingContent.trimEnd()}\n\n${managedBlock}\n`);
-}
-
-function writeTextFile(filePath: string, content: string): void {
-  fs.mkdirSync(path.dirname(filePath), { recursive: true });
-  fs.writeFileSync(filePath, content.endsWith("\n") ? content : `${content}\n`);
-}
-
-function readObjectProperty(payload: JsonObject, key: string): JsonObject {
-  const value = payload[key];
-  if (value === undefined) {
-    return {};
-  }
-  if (!isJsonObject(value)) {
-    throw new Error(`Config field '${key}' must be a JSON object.`);
-  }
-  return value;
-}
-
-function isJsonObject(value: unknown): value is JsonObject {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

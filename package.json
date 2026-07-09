@@ -1,6 +1,6 @@
 {
   "name": "@tropass/mcp-installer",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Installer for configuring agents to use the Tropass remote MCP gateway.",
   "license": "MIT",
   "type": "module",
@@ -32,16 +32,19 @@
     "react": "^19.2.7"
   },
   "devDependencies": {
+    "@anthropic-ai/claude-code": "^2.1.205",
     "@eslint/js": "^9.39.1",
+    "@openai/codex": "^0.143.0",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.17",
     "eslint": "^9.39.1",
+    "opencode-ai": "^1.17.16",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.0",
     "vitest": "^4.0.14"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22"
   },
   "files": [
     "dist/",

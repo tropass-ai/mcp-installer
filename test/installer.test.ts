@@ -185,7 +185,6 @@ describe("installTropassMcp", () => {
     expect(readJson(result.configPath).mcpServers.tropass.headers.Authorization).toBe(
       `Bearer ${TEST_API_TOKEN}`,
     );
-    expect(readJson(result.configPath).mcpServers.tropass.timeout).toBe(900);
 
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
     expect(instructions).toContain("# User memory");
@@ -195,7 +194,10 @@ describe("installTropassMcp", () => {
   });
 
   it("defaults Claude to project config for terminal agent installs", () => {
+    const homeDir = createTempDir();
     const projectDir = createTempDir();
+    process.env.HOME = homeDir;
+    process.env.USERPROFILE = homeDir;
 
     const result = installTropassMcp({
       client: "claude",
@@ -208,7 +210,9 @@ describe("installTropassMcp", () => {
     expect(result.configPath).toBe(path.join(projectDir, ".mcp.json"));
     expect(result.instructionPath).toBe(path.join(projectDir, "CLAUDE.md"));
     expect(readJson(result.configPath).mcpServers.tropass.type).toBe("http");
-    expect(readJson(result.configPath).mcpServers.tropass.timeout).toBe(900);
+    expect(readJson(result.configPath).mcpServers.tropass.headers.Authorization).toBe(
+      `Bearer ${TEST_API_TOKEN}`,
+    );
 
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
     expect(instructions).toContain(MANAGED_INSTRUCTIONS_BEGIN);
@@ -260,7 +264,7 @@ describe("installTropassMcp", () => {
     expect(instructions).toContain(MANAGED_INSTRUCTIONS_END);
   });
 
-  it("writes OpenCode global config to opencode.json", () => {
+  it("writes OpenCode global config to opencode.jsonc", () => {
     const homeDir = createTempDir();
     process.env.HOME = homeDir;
     process.env.USERPROFILE = homeDir;
@@ -272,9 +276,12 @@ describe("installTropassMcp", () => {
       apiToken: TEST_API_TOKEN,
     });
 
-    expect(result.configPath).toBe(path.join(homeDir, ".config", "opencode", "opencode.json"));
+    expect(result.configPath).toBe(path.join(homeDir, ".config", "opencode", "opencode.jsonc"));
     expect(result.instructionPath).toBe(path.join(homeDir, ".config", "opencode", "AGENTS.md"));
-    expect(readJson(result.configPath).mcp.tropass.enabled).toBe(true);
+    expect(readJson(result.configPath).mcp.tropass.url).toBe(TEST_MCP_URL);
+    expect(readJson(result.configPath).mcp.tropass.headers.Authorization).toBe(
+      `Bearer ${TEST_API_TOKEN}`,
+    );
   });
 
   it("rejects unsupported clients", () => {
