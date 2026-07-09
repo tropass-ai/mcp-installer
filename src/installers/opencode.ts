@@ -1,3 +1,5 @@
+import fs from "node:fs";
+
 import { DEFAULT_TOKEN_HEADER } from "../constants.js";
 import {
   buildInstructionContent,
@@ -26,22 +28,14 @@ export const opencodeInstaller: HarnessInstaller = {
         "--header",
         `${DEFAULT_TOKEN_HEADER}=${buildBearerToken(options.apiToken)}`
       ]);
+      if (fs.existsSync(configPath)) {
+        return;
+      }
+      writeOpenCodeConfig(configPath, options.mcpUrl, options.apiToken);
       return;
     }
 
-    const payload = readJsonFile(configPath);
-    payload.mcp = {
-      ...readObjectProperty(payload, "mcp"),
-      tropass: {
-        type: "remote",
-        enabled: true,
-        url: options.mcpUrl,
-        headers: {
-          [DEFAULT_TOKEN_HEADER]: buildBearerToken(options.apiToken)
-        }
-      }
-    };
-    writeJsonFile(configPath, payload);
+    writeOpenCodeConfig(configPath, options.mcpUrl, options.apiToken);
   },
 
   installInstructions(options, instructionPath) {
@@ -53,3 +47,19 @@ export const opencodeInstaller: HarnessInstaller = {
     );
   }
 };
+
+function writeOpenCodeConfig(configPath: string, mcpUrl: string, apiToken: string): void {
+  const payload = readJsonFile(configPath);
+  payload.mcp = {
+    ...readObjectProperty(payload, "mcp"),
+    tropass: {
+      type: "remote",
+      enabled: true,
+      url: mcpUrl,
+      headers: {
+        [DEFAULT_TOKEN_HEADER]: buildBearerToken(apiToken)
+      }
+    }
+  };
+  writeJsonFile(configPath, payload);
+}
