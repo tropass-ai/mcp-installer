@@ -24,26 +24,8 @@ export const codexInstaller: HarnessInstaller = {
 
     const codexHome = path.dirname(configPath);
     fs.mkdirSync(codexHome, { recursive: true });
-    childProcess.execFileSync(
-      "codex",
-      ["mcp", "add", "tropass", "--url", options.mcpUrl, "--bearer-token-env-var", CODEX_TOKEN_ENV_VAR],
-      {
-        env: {
-          ...process.env,
-          CODEX_HOME: codexHome
-        },
-        stdio: "ignore"
-      }
-    );
-
-    const config = fs.readFileSync(configPath, "utf8").replace(
-      `bearer_token_env_var = ${stringifyTomlValue(CODEX_TOKEN_ENV_VAR)}`,
-      [
-        `http_headers = { ${stringifyTomlKey(DEFAULT_TOKEN_HEADER)} = ${stringifyTomlValue(buildBearerToken(options.apiToken))} }`,
-        `tool_timeout_sec = ${TOOL_TIMEOUT_SECONDS}`
-      ].join("\n")
-    );
-    writeTextFile(configPath, config);
+    runCodexMcpAdd(codexHome, options.mcpUrl);
+    writeCodexToken(configPath, options.apiToken);
   },
 
   installInstructions(_options, primaryInstructionPath) {
@@ -53,3 +35,37 @@ export const codexInstaller: HarnessInstaller = {
     }
   }
 };
+
+function runCodexMcpAdd(codexHome: string, mcpUrl: string): void {
+  childProcess.execFileSync(
+    "codex",
+    ["mcp", "add", "tropass", "--url", mcpUrl, "--bearer-token-env-var", CODEX_TOKEN_ENV_VAR],
+    {
+      env: {
+        ...process.env,
+        CODEX_HOME: codexHome
+      },
+      stdio: "ignore"
+    }
+  );
+}
+
+function writeCodexToken(configPath: string, apiToken: string): void {
+  const placeholder = `bearer_token_env_var = ${stringifyTomlValue(CODEX_TOKEN_ENV_VAR)}`;
+  const config = fs.readFileSync(configPath, "utf8");
+
+  if (!config.includes(placeholder)) {
+    throw new Error("Codex config did not contain the expected bearer token placeholder.");
+  }
+
+  writeTextFile(
+    configPath,
+    config.replace(
+      placeholder,
+      [
+        `http_headers = { ${stringifyTomlKey(DEFAULT_TOKEN_HEADER)} = ${stringifyTomlValue(buildBearerToken(apiToken))} }`,
+        `tool_timeout_sec = ${TOOL_TIMEOUT_SECONDS}`
+      ].join("\n")
+    )
+  );
+}

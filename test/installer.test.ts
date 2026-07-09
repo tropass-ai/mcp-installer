@@ -1,8 +1,9 @@
+import childProcess from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import {afterEach, describe, expect, it} from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {installTropassMcp} from "../src/installer.js";
 import {
@@ -17,11 +18,38 @@ const ORIGINAL_USERPROFILE = process.env.USERPROFILE;
 
 let tempDirs: string[] = [];
 
+beforeEach(() => {
+  vi.spyOn(childProcess, "execFileSync").mockImplementation(
+    (_command: string, args?: readonly string[] | undefined, options?: childProcess.ExecFileSyncOptions | undefined) => {
+      const codexHome = options?.env?.CODEX_HOME;
+      if (typeof codexHome !== "string") {
+        throw new Error("CODEX_HOME is required.");
+      }
+
+      const urlIndex = args?.indexOf("--url") ?? -1;
+      const mcpUrl = urlIndex >= 0 ? args?.[urlIndex + 1] : undefined;
+      if (!mcpUrl) {
+        throw new Error("Codex MCP URL is required.");
+      }
+
+      const configPath = path.join(codexHome, "config.toml");
+      const existingConfig = fs.existsSync(configPath) ? `${fs.readFileSync(configPath, "utf8").trimEnd()}\n\n` : "";
+      fs.mkdirSync(codexHome, { recursive: true });
+      fs.writeFileSync(
+        configPath,
+        `${existingConfig}[mcp_servers.tropass]\nurl = "${mcpUrl}"\nbearer_token_env_var = "TROPASS_API_TOKEN"\n`,
+      );
+      return Buffer.from("");
+    },
+  );
+});
+
 afterEach(() => {
+  vi.restoreAllMocks();
   process.env.HOME = ORIGINAL_HOME;
   process.env.USERPROFILE = ORIGINAL_USERPROFILE;
   for (const tempDir of tempDirs) {
-    fs.rmSync(tempDir, {recursive: true, force: true});
+    fs.rmSync(tempDir, { recursive: true, force: true });
   }
   tempDirs = [];
 });
@@ -30,7 +58,7 @@ describe("installTropassMcp", () => {
   it("writes Codex project config and project skill without removing existing config", () => {
     const projectDir = createTempDir();
     const configPath = path.join(projectDir, ".codex", "config.toml");
-    fs.mkdirSync(path.dirname(configPath), {recursive: true});
+    fs.mkdirSync(path.dirname(configPath), { recursive: true });
     fs.writeFileSync(configPath, 'model = "gpt-5.5"\n');
 
     const result = installTropassMcp({
@@ -54,6 +82,16 @@ describe("installTropassMcp", () => {
       `http_headers = { "Authorization" = "Bearer ${TEST_API_TOKEN}" }`,
     );
     expect(config).toContain("tool_timeout_sec = 900");
+    expect(childProcess.execFileSync).toHaveBeenCalledWith(
+      "codex",
+      ["mcp", "add", "tropass", "--url", TEST_MCP_URL, "--bearer-token-env-var", "TROPASS_API_TOKEN"],
+      expect.objectContaining({
+        env: expect.objectContaining({
+          CODEX_HOME: path.join(projectDir, ".codex"),
+        }),
+        stdio: "ignore",
+      }),
+    );
 
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
     expect(instructions).toContain("name: tropass-gateway");
@@ -215,7 +253,7 @@ describe("installTropassMcp", () => {
       url: TEST_MCP_URL,
       headers: {
         Authorization: `Bearer ${TEST_API_TOKEN}`,
-      }
+      },
     });
 
     const instructions = fs.readFileSync(instructionsPath, "utf8");
@@ -265,7 +303,7 @@ function createTempDir(): string {
 }
 
 function writeJson(filePath: string, payload: unknown): void {
-  fs.mkdirSync(path.dirname(filePath), {recursive: true});
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
   fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`);
 }
 
