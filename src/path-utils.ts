@@ -28,14 +28,6 @@ export function resolveCodexSkillsPath(): string {
   return path.join(process.env.HOME || process.env.USERPROFILE || "", ".codex", "skills");
 }
 
-export function resolveCursorConfigPath(): string {
-  return path.join(process.env.HOME || process.env.USERPROFILE || "", ".cursor", "mcp.json");
-}
-
-export function resolveCursorRulesPath(): string {
-  return path.join(process.env.HOME || process.env.USERPROFILE || "", ".cursor", "rules");
-}
-
 export function resolveOpenCodeConfigPath(): string {
   const home = process.env.HOME || process.env.USERPROFILE || "";
   if (process.platform === "win32") {

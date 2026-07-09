@@ -26,12 +26,6 @@ Codex project config:
 npx -y @tropass/mcp-installer codex
 ```
 
-Cursor project config:
-
-```bash
-npx -y @tropass/mcp-installer cursor
-```
-
 Claude project config:
 
 ```bash
@@ -47,7 +41,7 @@ npx -y @tropass/mcp-installer opencode
 ## Non-interactive install
 
 ```bash
-npx -y @tropass/mcp-installer cursor \
+npx -y @tropass/mcp-installer codex \
   --scope project \
   --url "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp" \
   --token "your-api-token" \
@@ -63,7 +57,7 @@ npx -y @tropass/mcp-installer codex --local --token "your-api-token" --yes
 
 ## Куда пишутся файлы
 
-По умолчанию installer спрашивает scope. С `--yes` используются defaults: `project` для Codex, Claude, Cursor и OpenCode.
+По умолчанию installer спрашивает scope. С `--yes` используются defaults: `project` для Codex, Claude и OpenCode.
 
 Project install:
 
@@ -71,9 +65,6 @@ Project install:
   - config: `.codex/config.toml` в текущем проекте;
   - instructions: `.codex/skills/tropass-gateway/SKILL.md`;
   - response display skill: `.codex/skills/agent-response-display/SKILL.md`;
-- Cursor:
-  - config: `.cursor/mcp.json` в текущем проекте;
-  - instructions: `.cursor/rules/tropass-mcp.mdc`;
 - Claude:
   - config: `.mcp.json` в текущем проекте;
   - instructions: `CLAUDE.md`;
@@ -86,9 +77,6 @@ Global install:
   - config: `~/.codex/config.toml`;
   - instructions: `~/.codex/skills/tropass-gateway/SKILL.md`;
   - response display skill: `~/.codex/skills/agent-response-display/SKILL.md`;
-- Cursor:
-  - config: `~/.cursor/mcp.json`;
-  - instructions: `~/.cursor/rules/tropass-mcp.mdc`;
 - Claude:
   - config: `~/.claude.json`;
   - instructions: `~/.claude/CLAUDE.md`;
@@ -96,7 +84,7 @@ Global install:
   - config on macOS/Linux: `~/.config/opencode/opencode.json`;
   - config on Windows: `%APPDATA%\opencode\opencode.json`;
   - instructions: `AGENTS.md` рядом с config;
-Для `AGENTS.md`, `CLAUDE.md` и Codex `config.toml` installer использует managed block и не стирает существующие инструкции.
+Для Codex installer вызывает `codex mcp add`, затем записывает token в созданный `config.toml`. Для `AGENTS.md` и `CLAUDE.md` installer использует managed block и не стирает существующие инструкции.
 
 Можно указать путь явно:
 

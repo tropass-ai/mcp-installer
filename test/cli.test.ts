@@ -42,7 +42,7 @@ describe("main", () => {
     process.argv = [
       "node",
       "/usr/local/bin/tropass-mcp-install",
-      "cursor",
+      "claude",
       "--config",
       "/tmp/mcp.json",
       "--url",
@@ -60,7 +60,7 @@ describe("main", () => {
     await main();
 
     expect(runInstall).toHaveBeenCalledWith({
-      client: "cursor",
+      client: "claude",
       config: "/tmp/mcp.json",
       url: "https://example.test/mcp",
       token: "token-123",
@@ -122,7 +122,7 @@ describe("main", () => {
     expect(stdout).toContain("Usage: tropass-mcp-install [options] [client]");
     expect(stdout).toContain("Install direct remote Tropass MCP config and agent instructions.");
     expect(stdout).toContain("Tropass: https://xn--80a1adciab.xn--p1ai/");
-    expect(stdout).toContain("codex, cursor, claude, or opencode");
+    expect(stdout).toContain("codex, claude, or opencode");
     expect(stdout).toContain("install scope: project or global");
     expect(runInstall).not.toHaveBeenCalled();
   });

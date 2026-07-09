@@ -10,8 +10,6 @@ import {
   resolveCodexSkillsPath,
   resolveClaudeCodeConfigPath,
   resolveClaudeCodeInstructionPath,
-  resolveCursorConfigPath,
-  resolveCursorRulesPath,
   resolveOpenCodeConfigPath,
   resolveOpenCodeInstructionPath
 } from "./path-utils.js";
@@ -156,9 +154,6 @@ function resolveConfigPath(client: InstallClient, options: ValidatedInstallOptio
   if (client === "codex") {
     return options.scope === "global" ? resolveCodexConfigPath() : path.join(projectDir, ".codex", "config.toml");
   }
-  if (client === "cursor") {
-    return options.scope === "global" ? resolveCursorConfigPath() : path.join(projectDir, ".cursor", "mcp.json");
-  }
   if (client === "claude") {
     return options.scope === "global" ? resolveClaudeCodeConfigPath() : path.join(projectDir, ".mcp.json");
   }
@@ -173,10 +168,6 @@ function resolveInstructionPath(client: InstallClient, options: ValidatedInstall
   if (client === "codex") {
     const skillsPath = options.scope === "global" ? resolveCodexSkillsPath() : path.join(projectDir, ".codex", "skills");
     return path.join(skillsPath, "tropass-gateway", "SKILL.md");
-  }
-  if (client === "cursor") {
-    const rulesPath = options.scope === "global" ? resolveCursorRulesPath() : path.join(projectDir, ".cursor", "rules");
-    return path.join(rulesPath, "tropass-mcp.mdc");
   }
   if (client === "claude") {
     return options.scope === "global" ? resolveClaudeCodeInstructionPath() : path.join(projectDir, "CLAUDE.md");

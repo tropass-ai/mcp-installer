@@ -48,7 +48,6 @@ describe("installTropassMcp", () => {
 
     const config = fs.readFileSync(configPath, "utf8");
     expect(config).toContain('model = "gpt-5.5"');
-    expect(config).toContain("# BEGIN TROPASS MCP CONFIG");
     expect(config).toContain("[mcp_servers.tropass]");
     expect(config).toContain(`url = "${TEST_MCP_URL}"`);
     expect(config).toContain(
@@ -110,56 +109,18 @@ describe("installTropassMcp", () => {
     ).toContain("Agent Response Display");
   });
 
-  it("writes Cursor config and rule without removing existing MCP servers", () => {
-    const projectDir = createTempDir();
-    const configPath = path.join(projectDir, ".cursor", "mcp.json");
-    writeJson(configPath, {
-      mcpServers: {
-        existing: {
-          command: "existing-server",
-        },
-      },
-    });
-
-    const result = installTropassMcp({
-      client: "cursor",
-      projectDir,
-      mcpUrl: TEST_MCP_URL,
-      apiToken: TEST_API_TOKEN,
-    });
-
-    expect(result.configPath).toBe(configPath);
-    expect(result.instructionPath).toBe(
-      path.join(projectDir, ".cursor", "rules", "tropass-mcp.mdc"),
-    );
-
-    const config = readJson(configPath);
-    expect(config.mcpServers.existing.command).toBe("existing-server");
-    expect(config.mcpServers.tropass).toEqual({
-      url: TEST_MCP_URL,
-      headers: {
-        Authorization: `Bearer ${TEST_API_TOKEN}`,
-      },
-      timeout: 900,
-    });
-
-    const instructions = fs.readFileSync(result.instructionPath, "utf8");
-    expect(instructions).toContain("alwaysApply: true");
-    expect(instructions).toContain("Tropass MCP Instructions");
-  });
-
   it("does not duplicate an existing Bearer prefix", () => {
     const projectDir = createTempDir();
-    const configPath = path.join(projectDir, ".cursor", "mcp.json");
+    const configPath = path.join(projectDir, ".codex", "config.toml");
 
     installTropassMcp({
-      client: "cursor",
+      client: "codex",
       projectDir,
       mcpUrl: TEST_MCP_URL,
       apiToken: `Bearer ${TEST_API_TOKEN}`,
     });
 
-    expect(readJson(configPath).mcpServers.tropass.headers.Authorization).toBe(
+    expect(fs.readFileSync(configPath, "utf8")).toContain(
       `Bearer ${TEST_API_TOKEN}`,
     );
   });

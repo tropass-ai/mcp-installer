@@ -74,14 +74,6 @@ export function buildInstructionContent(client: InstallClient): string {
   if (client === "codex") {
     return buildSkillContent(TROPASS_GATEWAY_SKILL);
   }
-  if (client === "cursor") {
-    return `---
-description: Use Tropass MCP for ML model calls
-alwaysApply: true
----
-
-${TROPASS_MCP_INSTRUCTIONS}`;
-  }
   if (client === "claude") {
     return `${TROPASS_MCP_INSTRUCTIONS}
 Add these instructions to your Claude project or custom instructions together with the Tropass MCP server config.

@@ -5,7 +5,6 @@ export const TROPASS_URL = "https://xn--80a1adciab.xn--p1ai/";
 export const DEFAULT_TOKEN_HEADER = "Authorization";
 export const SUPPORTED_INSTALL_CLIENTS = new Set<InstallClient>([
   "codex",
-  "cursor",
   "claude",
   "opencode",
 ]);

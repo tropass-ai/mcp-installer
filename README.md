@@ -16,7 +16,7 @@ npx -y @tropass/mcp-installer
 
 CLI спросит:
 
-- MCP client: Codex, Claude, Cursor или OpenCode;
+- MCP client: Codex, Claude или OpenCode;
 - scope установки: `project` или `global`;
 - Tropass MCP URL;
 - Tropass API token.
@@ -25,7 +25,6 @@ CLI спросит:
 
 ```bash
 npx -y @tropass/mcp-installer codex
-npx -y @tropass/mcp-installer cursor
 npx -y @tropass/mcp-installer claude
 npx -y @tropass/mcp-installer opencode
 ```
@@ -33,7 +32,7 @@ npx -y @tropass/mcp-installer opencode
 ## Неинтерактивная Установка
 
 ```bash
-npx -y @tropass/mcp-installer cursor \
+npx -y @tropass/mcp-installer codex \
   --scope project \
   --url "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp" \
   --token "your-api-token" \
@@ -52,18 +51,16 @@ npx -y @tropass/mcp-installer codex --local --token "your-api-token" --yes
 Project install:
 
 - Codex: `.codex/config.toml`, `.codex/skills/tropass-gateway/SKILL.md` и `.codex/skills/agent-response-display/SKILL.md`
-- Cursor: `.cursor/mcp.json` и `.cursor/rules/tropass-mcp.mdc`
 - Claude: `.mcp.json` и `CLAUDE.md`
 - OpenCode: `opencode.json` и `AGENTS.md`
 
 Global install:
 
 - Codex: `~/.codex/config.toml`, `~/.codex/skills/tropass-gateway/SKILL.md` и `~/.codex/skills/agent-response-display/SKILL.md`
-- Cursor: `~/.cursor/mcp.json` и `~/.cursor/rules/tropass-mcp.mdc`
 - Claude: `~/.claude.json` и `~/.claude/CLAUDE.md`
 - OpenCode: `~/.config/opencode/opencode.json` или `%APPDATA%\opencode\opencode.json`, и `AGENTS.md`
 
-Инсталлер сохраняет существующие config entries и использует managed blocks для instruction-файлов, которые могут содержать пользовательский текст.
+Для Codex инсталлер вызывает `codex mcp add tropass --url ...`, затем записывает переданный token в `.codex/config.toml`. Для instruction-файлов инсталлер использует managed blocks, которые могут содержать пользовательский текст.
 
 ## Ручная MCP Конфигурация
 
@@ -83,8 +80,6 @@ Global install:
   }
 }
 ```
-
-Cursor использует такой же `mcpServers` формат. Если конкретная версия Cursor не принимает `type`, удалите поле `"type": "http"`.
 
 OpenCode хранит MCP servers в секции `mcp` файла `opencode.json` и требует `type: "remote"` и `enabled: true`:
 
