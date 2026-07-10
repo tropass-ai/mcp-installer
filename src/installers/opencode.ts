@@ -1,6 +1,6 @@
 import fs from "node:fs";
 
-import { DEFAULT_LLM_MODEL, DEFAULT_TOKEN_HEADER, LLM_GATEWAY_URL } from "../constants.js";
+import { DEFAULT_LLM_MODEL, DEFAULT_TOKEN_HEADER } from "../constants.js";
 import {
   buildInstructionContent,
   MANAGED_INSTRUCTIONS_BEGIN,
@@ -40,7 +40,7 @@ export const opencodeInstaller: HarnessInstaller = {
   },
 
   installProvider(options, configPath) {
-    writeOpenCodeProvider(configPath, options.apiToken);
+    writeOpenCodeProvider(configPath, options.apiToken, options.llmUrl);
   },
 
   installInstructions(options, instructionPath) {
@@ -69,7 +69,7 @@ function writeOpenCodeConfig(configPath: string, mcpUrl: string, apiToken: strin
   writeJsonFile(configPath, payload);
 }
 
-function writeOpenCodeProvider(configPath: string, apiToken: string): void {
+function writeOpenCodeProvider(configPath: string, apiToken: string, llmUrl: string): void {
   const payload = readJsonFile(configPath);
   payload.model = `tropass/${DEFAULT_LLM_MODEL}`;
   payload.provider = {
@@ -78,7 +78,7 @@ function writeOpenCodeProvider(configPath: string, apiToken: string): void {
       npm: "@ai-sdk/openai-compatible",
       name: "Tropass",
       options: {
-        baseURL: `${LLM_GATEWAY_URL}/v1`,
+        baseURL: `${llmUrl}/v1`,
         apiKey: stripBearerToken(apiToken)
       }
     }

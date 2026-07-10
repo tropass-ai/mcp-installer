@@ -10,7 +10,8 @@ CLI спросит:
 
 - MCP client;
 - install scope: project или global;
-- Tropass MCP URL;
+- Tropass model API gateway URL;
+- Tropass LLM gateway URL;
 - Tropass API token.
 
 Затем CLI сохранит:
@@ -45,6 +46,7 @@ npx -y @tropass/mcp-installer opencode
 npx -y @tropass/mcp-installer codex \
   --scope project \
   --url "https://апи.тропасс.рф/mcp" \
+  --llm-url "https://апи.ллм.тропасс.рф" \
   --token "your-api-token" \
   --yes
 ```

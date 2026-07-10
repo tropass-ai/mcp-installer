@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-import { DEFAULT_LLM_MODEL, DEFAULT_TOKEN_HEADER, LLM_GATEWAY_URL } from "../constants.js";
+import { DEFAULT_LLM_MODEL, DEFAULT_TOKEN_HEADER } from "../constants.js";
 import { buildSkillContents } from "../instructions.js";
 import type { HarnessInstaller } from "./types.js";
 import {
@@ -32,7 +32,7 @@ export const codexInstaller: HarnessInstaller = {
   },
 
   installProvider(options, configPath) {
-    writeCodexProvider(configPath, options.apiToken);
+    writeCodexProvider(configPath, options.apiToken, options.llmUrl);
   },
 
   installInstructions(_options, primaryInstructionPath) {
@@ -57,7 +57,7 @@ function runCodexMcpAdd(codexHome: string, mcpUrl: string): void {
   );
 }
 
-function writeCodexProvider(configPath: string, apiToken: string): void {
+function writeCodexProvider(configPath: string, apiToken: string, llmUrl: string): void {
   const config = fs.existsSync(configPath) ? fs.readFileSync(configPath, "utf8") : "";
   const content = removeManagedBlock(config, TROPASS_LLM_PROVIDER_BEGIN, TROPASS_LLM_PROVIDER_END);
   const lines = content.trimEnd().split("\n");
@@ -74,7 +74,7 @@ function writeCodexProvider(configPath: string, apiToken: string): void {
     "[model_providers.tropass]",
     `provider = ${stringifyTomlValue("openai")}`,
     `name = ${stringifyTomlValue("Tropass")}`,
-    `base_url = ${stringifyTomlValue(`${LLM_GATEWAY_URL}/v1`)}`,
+    `base_url = ${stringifyTomlValue(`${llmUrl}/v1`)}`,
     `wire_api = ${stringifyTomlValue("responses")}`,
     `experimental_bearer_token = ${stringifyTomlValue(stripBearerToken(apiToken))}`,
     TROPASS_LLM_PROVIDER_END

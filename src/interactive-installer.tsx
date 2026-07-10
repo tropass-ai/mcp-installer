@@ -18,10 +18,11 @@ type CompletedInstallOptions = {
   client: InstallClient;
   scope: InstallScope;
   mcpUrl: string;
+  llmUrl: string;
   apiToken: string;
 };
 
-type Step = "client" | "scope" | "url" | "token";
+type Step = "client" | "scope" | "mcp-url" | "llm-url" | "token";
 
 const CLIENT_ITEMS: Array<{ label: string; value: InstallClient }> = [
   { label: "Codex", value: "codex" },
@@ -42,6 +43,7 @@ export async function runInteractiveInstaller(
       client: options.client,
       scope: options.scope,
       mcpUrl: options.mcpUrl,
+      llmUrl: options.llmUrl,
       apiToken: options.apiToken
     };
   }
@@ -79,18 +81,21 @@ function InstallerWizard({
   const [client, setClient] = useState(options.client);
   const [scope, setScope] = useState(options.scope);
   const [mcpUrl, setMcpUrl] = useState(options.mcpUrl);
+  const [llmUrl, setLlmUrl] = useState(options.llmUrl);
   const [apiToken, setApiToken] = useState(options.apiToken ?? "");
-  const [urlConfirmed, setUrlConfirmed] = useState(options.yes);
+  const [mcpUrlConfirmed, setMcpUrlConfirmed] = useState(options.yes);
+  const [llmUrlConfirmed, setLlmUrlConfirmed] = useState(options.yes);
 
-  const step = resolveStep({ client, scope, urlConfirmed });
+  const step = resolveStep({ client, scope, mcpUrlConfirmed, llmUrlConfirmed });
 
   const complete = (values: {
     client: InstallClient | undefined;
     scope: InstallScope | undefined;
     mcpUrl: string;
+    llmUrl: string;
     apiToken: string;
-  }, confirmedUrl = urlConfirmed): void => {
-    if (values.client && values.scope && values.apiToken && confirmedUrl) {
+  }, confirmedMcpUrl = mcpUrlConfirmed, confirmedLlmUrl = llmUrlConfirmed): void => {
+    if (values.client && values.scope && values.apiToken && confirmedMcpUrl && confirmedLlmUrl) {
       onComplete({ ...values, client: values.client, scope: values.scope, apiToken: values.apiToken });
       exit();
     }
@@ -102,7 +107,7 @@ function InstallerWizard({
     if (selectedScope) {
       setScope(selectedScope);
     }
-    complete({ client: item.value, scope: selectedScope, mcpUrl, apiToken });
+    complete({ client: item.value, scope: selectedScope, mcpUrl, llmUrl, apiToken });
   };
 
   const submitToken = (value: string): void => {
@@ -111,7 +116,7 @@ function InstallerWizard({
       return;
     }
     setApiToken(token);
-    complete({ client, scope, mcpUrl, apiToken: token });
+    complete({ client, scope, mcpUrl, llmUrl, apiToken: token });
   };
 
   return (
@@ -136,14 +141,14 @@ function InstallerWizard({
               items={SCOPE_ITEMS}
               onSelect={(item) => {
                 setScope(item.value);
-                complete({ client, scope: item.value, mcpUrl, apiToken });
+                complete({ client, scope: item.value, mcpUrl, llmUrl, apiToken });
               }}
             />
           </>
         )}
-        {step === "url" && (
+        {step === "mcp-url" && (
           <>
-            <Text bold>Tropass MCP URL</Text>
+            <Text bold>Tropass model API gateway URL</Text>
             <TextInput
               value={mcpUrl}
               onChange={setMcpUrl}
@@ -151,8 +156,25 @@ function InstallerWizard({
                 if (value.trim()) {
                   const confirmedUrl = value.trim();
                   setMcpUrl(confirmedUrl);
-                  setUrlConfirmed(true);
-                  complete({ client, scope, mcpUrl: confirmedUrl, apiToken }, true);
+                  setMcpUrlConfirmed(true);
+                  complete({ client, scope, mcpUrl: confirmedUrl, llmUrl, apiToken }, true);
+                }
+              }}
+            />
+          </>
+        )}
+        {step === "llm-url" && (
+          <>
+            <Text bold>Tropass LLM gateway URL</Text>
+            <TextInput
+              value={llmUrl}
+              onChange={setLlmUrl}
+              onSubmit={(value) => {
+                if (value.trim()) {
+                  const confirmedUrl = value.trim().replace(/\/+$/, "");
+                  setLlmUrl(confirmedUrl);
+                  setLlmUrlConfirmed(true);
+                  complete({ client, scope, mcpUrl, llmUrl: confirmedUrl, apiToken }, mcpUrlConfirmed, true);
                 }
               }}
             />
@@ -174,11 +196,13 @@ function InstallerWizard({
   function resolveStep(values: {
     client: InstallClient | undefined;
     scope: InstallScope | undefined;
-    urlConfirmed: boolean;
+    mcpUrlConfirmed: boolean;
+    llmUrlConfirmed: boolean;
   }): Step {
     if (!values.client) return "client";
     if (!values.scope) return "scope";
-    if (!values.urlConfirmed) return "url";
+    if (!values.mcpUrlConfirmed) return "mcp-url";
+    if (!values.llmUrlConfirmed) return "llm-url";
     return "token";
   }
 }

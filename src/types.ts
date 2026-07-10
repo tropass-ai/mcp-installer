@@ -7,6 +7,8 @@ export type RawInstallOptions = {
   configPath?: string;
   url?: string;
   mcpUrl?: string;
+  llmUrl?: string;
+  llmGatewayUrl?: string;
   token?: string;
   apiToken?: string;
   project?: string;
@@ -21,6 +23,7 @@ export type InstallOptions = {
   client?: string;
   configPath?: string;
   mcpUrl: string;
+  llmUrl: string;
   apiToken?: string;
   projectDir: string;
   scope?: string;

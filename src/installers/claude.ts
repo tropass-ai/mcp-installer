@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { DEFAULT_LLM_MODEL, DEFAULT_TOKEN_HEADER, LLM_GATEWAY_URL } from "../constants.js";
+import { DEFAULT_LLM_MODEL, DEFAULT_TOKEN_HEADER } from "../constants.js";
 import {
   buildInstructionContent,
   MANAGED_INSTRUCTIONS_BEGIN,
@@ -52,7 +52,7 @@ export const claudeInstaller: HarnessInstaller = {
   },
 
   installProvider(options) {
-    writeClaudeProvider(resolveClaudeSettingsPath(options), options.apiToken);
+    writeClaudeProvider(resolveClaudeSettingsPath(options), options.apiToken, options.llmUrl);
   },
 
   installInstructions(options, instructionPath) {
@@ -72,11 +72,11 @@ function resolveClaudeSettingsPath(options: { projectDir: string; scope: string 
   return path.join(path.resolve(expandHome(options.projectDir)), ".claude", "settings.json");
 }
 
-function writeClaudeProvider(settingsPath: string, apiToken: string): void {
+function writeClaudeProvider(settingsPath: string, apiToken: string, llmUrl: string): void {
   const payload = readJsonFile(settingsPath);
   payload.env = {
     ...readObjectProperty(payload, "env"),
-    ANTHROPIC_BASE_URL: LLM_GATEWAY_URL,
+    ANTHROPIC_BASE_URL: llmUrl,
     ANTHROPIC_API_KEY: stripBearerToken(apiToken),
     ANTHROPIC_MODEL: DEFAULT_LLM_MODEL
   };

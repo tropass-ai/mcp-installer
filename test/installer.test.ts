@@ -13,6 +13,7 @@ import {
 
 const TEST_MCP_URL = "https://апи.тропасс.рф/mcp";
 const TEST_LLM_GATEWAY_URL = "https://апи.ллм.тропасс.рф";
+const TEST_CUSTOM_LLM_GATEWAY_URL = "https://llm.example.test";
 const TEST_LLM_MODEL = "Qwen3.5-397B-A17B-FP8";
 const TEST_API_TOKEN = "test-token";
 const ORIGINAL_HOME = process.env.HOME;
@@ -67,6 +68,7 @@ describe("installTropassMcp", () => {
       client: "codex",
       projectDir,
       mcpUrl: TEST_MCP_URL,
+      llmUrl: `${TEST_CUSTOM_LLM_GATEWAY_URL}/`,
       apiToken: TEST_API_TOKEN,
     });
 
@@ -88,7 +90,7 @@ describe("installTropassMcp", () => {
     expect(config).toContain('model_provider = "tropass"');
     expect(config).toContain("[model_providers.tropass]");
     expect(config).toContain('provider = "openai"');
-    expect(config).toContain(`base_url = "${TEST_LLM_GATEWAY_URL}/v1"`);
+    expect(config).toContain(`base_url = "${TEST_CUSTOM_LLM_GATEWAY_URL}/v1"`);
     expect(config).toContain(`experimental_bearer_token = "${TEST_API_TOKEN}"`);
     expect(childProcess.execFileSync).toHaveBeenCalledWith(
       "codex",

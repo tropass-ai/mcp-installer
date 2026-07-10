@@ -1,7 +1,7 @@
 import path from "node:path";
 import process from "node:process";
 
-import { DEFAULT_MCP_URL, SUPPORTED_INSTALL_CLIENTS } from "./constants.js";
+import { DEFAULT_MCP_URL, LLM_GATEWAY_URL, SUPPORTED_INSTALL_CLIENTS } from "./constants.js";
 import { runInteractiveInstaller, writeInstallResult } from "./interactive-installer.js";
 import { resolveHarnessInstaller } from "./installers/index.js";
 import {
@@ -70,6 +70,9 @@ function normalizeInstallOptions(options: RawInstallOptions): InstallOptions {
   const scope = normalizeScopeOption(options);
   const normalizedOptions: InstallOptions = {
     mcpUrl: options.url ?? options.mcpUrl ?? process.env.TROPASS_MCP_URL ?? DEFAULT_MCP_URL,
+    llmUrl: stripTrailingSlashes(
+      options.llmUrl ?? options.llmGatewayUrl ?? process.env.TROPASS_LLM_URL ?? LLM_GATEWAY_URL
+    ),
     projectDir: options.project ?? options.projectDir ?? process.cwd(),
     yes: Boolean(options.yes)
   };
@@ -97,6 +100,9 @@ function validateInstallOptions(options: InstallOptions): ValidatedInstallOption
   }
   if (!options.mcpUrl) {
     throw new Error("Tropass MCP URL is required.");
+  }
+  if (!options.llmUrl) {
+    throw new Error("Tropass LLM URL is required.");
   }
   const scope = validateInstallScope(options.scope ?? resolveDefaultScope(client));
   return {
@@ -144,6 +150,10 @@ function validateInstallScope(value: string): InstallScope {
 
 function isInstallClient(value: unknown): value is InstallClient {
   return typeof value === "string" && SUPPORTED_INSTALL_CLIENTS.has(value as InstallClient);
+}
+
+function stripTrailingSlashes(value: string): string {
+  return value.replace(/\/+$/, "");
 }
 
 function resolveConfigPath(client: InstallClient, options: ValidatedInstallOptions): string {

@@ -47,6 +47,8 @@ describe("main", () => {
       "/tmp/mcp.json",
       "--url",
       "https://example.test/mcp",
+      "--llm-url",
+      "https://llm.example.test",
       "--token",
       "token-123",
       "--project",
@@ -63,6 +65,7 @@ describe("main", () => {
       client: "claude",
       config: "/tmp/mcp.json",
       url: "https://example.test/mcp",
+      llmUrl: "https://llm.example.test",
       token: "token-123",
       project: "/workspace/project",
       scope: "global",
@@ -123,6 +126,7 @@ describe("main", () => {
     expect(stdout).toContain("Install direct remote Tropass MCP config and agent instructions.");
     expect(stdout).toContain("Tropass: https://тропасс.рф/");
     expect(stdout).toContain("codex, claude, or opencode");
+    expect(stdout).toContain("Tropass LLM gateway URL");
     expect(stdout).toContain("install scope: project or global");
     expect(runInstall).not.toHaveBeenCalled();
   });
