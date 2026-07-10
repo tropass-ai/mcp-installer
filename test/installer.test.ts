@@ -286,6 +286,11 @@ describe("installTropassMcp", () => {
         baseURL: `${TEST_LLM_GATEWAY_URL}/v1`,
         apiKey: TEST_API_TOKEN,
       },
+      models: {
+        [TEST_LLM_MODEL]: {
+          name: TEST_LLM_MODEL,
+        },
+      },
     });
 
     const instructions = fs.readFileSync(instructionsPath, "utf8");
