@@ -6,7 +6,7 @@ CLI-инсталлер для настройки AI-агентов на рабо
 
 Tropass отдаёт доступные пользователю ML-модели как MCP tools: с JSON Schema валидацией входных параметров, структурированными ответами моделей и file-like аргументами через существующие Tropass/S3 URL файлов.
 
-Также installer добавляет LLM provider `tropass`, чтобы поддерживаемые harness могли обращаться к моделям за `https://апи.ллм.тропасс.рф`; default model: `Qwen3.5-397B-A17B-FP8`.
+Также installer добавляет LLM provider `tropass`, чтобы поддерживаемые harness могли обращаться к моделям за `https://апи.ллм.тропасс.рф`. Default model: `Qwen3.5-397B-A17B-FP8`.
 
 ## Установка
 
@@ -21,7 +21,7 @@ CLI спросит:
 - MCP client: Codex, Claude или OpenCode;
 - scope установки: `project` или `global`;
 - Tropass MCP URL;
-- Tropass API token.
+- Tropass API token для MCP и LLM gateway.
 
 ## Быстрые Команды
 
@@ -62,7 +62,21 @@ Global install:
 - Claude: `~/.claude.json`, `~/.claude/settings.json` и `~/.claude/CLAUDE.md`
 - OpenCode: `~/.config/opencode/opencode.json` или `%APPDATA%\opencode\opencode.json`, и `AGENTS.md`
 
-Для Codex инсталлер вызывает `codex mcp add tropass --url ...`, затем записывает переданный token в `.codex/config.toml`. Для instruction-файлов инсталлер использует managed blocks, которые могут содержать пользовательский текст.
+Для Codex инсталлер вызывает `codex mcp add tropass --url ...`, затем записывает переданный token в `.codex/config.toml`. Тот же token используется для авторизации LLM provider. Если token передан с префиксом `Bearer `, installer оставляет префикс только в HTTP headers и убирает его в provider credentials.
+
+## LLM Provider
+
+Installer добавляет provider `tropass` и default model:
+
+```text
+Qwen3.5-397B-A17B-FP8
+```
+
+Codex получает `model_provider = "tropass"` и `experimental_bearer_token`.
+
+OpenCode получает `model = "tropass/Qwen3.5-397B-A17B-FP8"` и `provider.tropass.options.apiKey`.
+
+Claude получает `.claude/settings.json` с `ANTHROPIC_BASE_URL`, `ANTHROPIC_API_KEY` и `ANTHROPIC_MODEL`.
 
 ## Ручная MCP Конфигурация
 
