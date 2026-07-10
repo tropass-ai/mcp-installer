@@ -1,6 +1,6 @@
 import fs from "node:fs";
 
-import { DEFAULT_TOKEN_HEADER } from "../constants.js";
+import { DEFAULT_LLM_MODEL, DEFAULT_TOKEN_HEADER, LLM_GATEWAY_URL } from "../constants.js";
 import {
   buildInstructionContent,
   MANAGED_INSTRUCTIONS_BEGIN,
@@ -11,6 +11,7 @@ import {
   buildBearerToken,
   readJsonFile,
   readObjectProperty,
+  stripBearerToken,
   upsertManagedBlock,
   writeJsonFile
 } from "./shared.js";
@@ -38,6 +39,10 @@ export const opencodeInstaller: HarnessInstaller = {
     writeOpenCodeConfig(configPath, options.mcpUrl, options.apiToken);
   },
 
+  installProvider(options, configPath) {
+    writeOpenCodeProvider(configPath, options.apiToken);
+  },
+
   installInstructions(options, instructionPath) {
     upsertManagedBlock(
       instructionPath,
@@ -58,6 +63,23 @@ function writeOpenCodeConfig(configPath: string, mcpUrl: string, apiToken: strin
       url: mcpUrl,
       headers: {
         [DEFAULT_TOKEN_HEADER]: buildBearerToken(apiToken)
+      }
+    }
+  };
+  writeJsonFile(configPath, payload);
+}
+
+function writeOpenCodeProvider(configPath: string, apiToken: string): void {
+  const payload = readJsonFile(configPath);
+  payload.model = `tropass/${DEFAULT_LLM_MODEL}`;
+  payload.provider = {
+    ...readObjectProperty(payload, "provider"),
+    tropass: {
+      npm: "@ai-sdk/openai-compatible",
+      name: "Tropass",
+      options: {
+        baseURL: `${LLM_GATEWAY_URL}/v1`,
+        apiKey: stripBearerToken(apiToken)
       }
     }
   };

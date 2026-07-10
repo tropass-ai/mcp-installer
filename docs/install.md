@@ -1,6 +1,6 @@
 # Install
 
-Пользователь может установить Tropass MCP config и инструкции для агента одной командой:
+Пользователь может установить Tropass MCP config, LLM provider и инструкции для агента одной командой:
 
 ```bash
 npx -y @tropass/mcp-installer
@@ -16,6 +16,7 @@ CLI спросит:
 Затем CLI сохранит:
 
 - MCP server config в конфигурационный файл выбранного клиента;
+- LLM provider `tropass` с default model `Qwen3.5-397B-A17B-FP8`;
 - инструкции по работе с Tropass MCP в native instruction/rules файл выбранного клиента.
 
 ## Быстрые команды
@@ -43,7 +44,7 @@ npx -y @tropass/mcp-installer opencode
 ```bash
 npx -y @tropass/mcp-installer codex \
   --scope project \
-  --url "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp" \
+  --url "https://апи.тропасс.рф/mcp" \
   --token "your-api-token" \
   --yes
 ```
@@ -67,6 +68,7 @@ Project install:
   - response display skill: `.codex/skills/agent-response-display/SKILL.md`;
 - Claude:
   - config: `.mcp.json` в текущем проекте;
+  - LLM provider env: `.claude/settings.json`;
   - instructions: `CLAUDE.md`;
 - OpenCode:
   - config: `opencode.json` в текущем проекте;
@@ -79,6 +81,7 @@ Global install:
   - response display skill: `~/.codex/skills/agent-response-display/SKILL.md`;
 - Claude:
   - config: `~/.claude.json`;
+  - LLM provider env: `~/.claude/settings.json`;
   - instructions: `~/.claude/CLAUDE.md`;
 - OpenCode:
   - config on macOS/Linux: `~/.config/opencode/opencode.json`;

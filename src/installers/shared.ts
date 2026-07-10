@@ -16,6 +16,10 @@ export function buildBearerToken(apiToken: string): string {
   return apiToken.startsWith("Bearer ") ? apiToken : `Bearer ${apiToken}`;
 }
 
+export function stripBearerToken(apiToken: string): string {
+  return apiToken.startsWith("Bearer ") ? apiToken.slice("Bearer ".length) : apiToken;
+}
+
 export function buildServerConfig(mcpUrl: string, apiToken: string): ServerConfig {
   return {
     url: mcpUrl,

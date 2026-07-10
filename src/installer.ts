@@ -51,6 +51,7 @@ export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult 
 
   const configPath = resolveConfigPath(options.client, options);
   installer.installConfig(options, configPath);
+  installer.installProvider(options, configPath);
 
   const instructionPath = resolveInstructionPath(options.client, options);
   installer.installInstructions(options, instructionPath);

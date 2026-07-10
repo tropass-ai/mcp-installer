@@ -8,7 +8,7 @@
 npx -y @tropass/mcp-installer
 ```
 
-Installer спросит MCP client и scope (`project` или `global`), затем запишет нативный config и instruction/rules файл выбранного клиента.
+Installer спросит MCP client и scope (`project` или `global`), затем запишет нативный MCP config, Tropass LLM provider и instruction/rules файл выбранного клиента.
 
 Ручной direct remote config для клиентов, которые поддерживают remote MCP with custom headers:
 
@@ -17,7 +17,7 @@ Installer спросит MCP client и scope (`project` или `global`), зат
   "mcpServers": {
     "tropass": {
       "type": "http",
-      "url": "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp",
+      "url": "https://апи.тропасс.рф/mcp",
       "headers": {
         "Authorization": "Bearer your-api-token"
       },

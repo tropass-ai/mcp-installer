@@ -13,7 +13,7 @@ Installer пишет direct remote MCP config и передает токен ч�
 ## Environment variables
 
 ```text
-TROPASS_MCP_URL=https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp
+TROPASS_MCP_URL=https://апи.тропасс.рф/mcp
 TROPASS_API_TOKEN=<your-api-token>
 ```
 

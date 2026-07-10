@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { DEFAULT_TOKEN_HEADER } from "../constants.js";
+import { DEFAULT_LLM_MODEL, DEFAULT_TOKEN_HEADER, LLM_GATEWAY_URL } from "../constants.js";
 import {
   buildInstructionContent,
   MANAGED_INSTRUCTIONS_BEGIN,
@@ -14,6 +14,7 @@ import {
   buildServerConfig,
   readJsonFile,
   readObjectProperty,
+  stripBearerToken,
   upsertManagedBlock,
   writeJsonFile
 } from "./shared.js";
@@ -50,6 +51,10 @@ export const claudeInstaller: HarnessInstaller = {
     ], projectDir);
   },
 
+  installProvider(options) {
+    writeClaudeProvider(resolveClaudeSettingsPath(options), options.apiToken);
+  },
+
   installInstructions(options, instructionPath) {
     upsertManagedBlock(
       instructionPath,
@@ -59,3 +64,21 @@ export const claudeInstaller: HarnessInstaller = {
     );
   }
 };
+
+function resolveClaudeSettingsPath(options: { projectDir: string; scope: string }): string {
+  if (options.scope === "global") {
+    return path.join(process.env.HOME || process.env.USERPROFILE || "", ".claude", "settings.json");
+  }
+  return path.join(path.resolve(expandHome(options.projectDir)), ".claude", "settings.json");
+}
+
+function writeClaudeProvider(settingsPath: string, apiToken: string): void {
+  const payload = readJsonFile(settingsPath);
+  payload.env = {
+    ...readObjectProperty(payload, "env"),
+    ANTHROPIC_BASE_URL: LLM_GATEWAY_URL,
+    ANTHROPIC_API_KEY: stripBearerToken(apiToken),
+    ANTHROPIC_MODEL: DEFAULT_LLM_MODEL
+  };
+  writeJsonFile(settingsPath, payload);
+}

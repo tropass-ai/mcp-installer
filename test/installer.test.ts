@@ -11,7 +11,9 @@ import {
   MANAGED_INSTRUCTIONS_END,
 } from "../src/instructions.js";
 
-const TEST_MCP_URL = "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp";
+const TEST_MCP_URL = "https://апи.тропасс.рф/mcp";
+const TEST_LLM_GATEWAY_URL = "https://апи.ллм.тропасс.рф";
+const TEST_LLM_MODEL = "Qwen3.5-397B-A17B-FP8";
 const TEST_API_TOKEN = "test-token";
 const ORIGINAL_HOME = process.env.HOME;
 const ORIGINAL_USERPROFILE = process.env.USERPROFILE;
@@ -75,13 +77,19 @@ describe("installTropassMcp", () => {
     );
 
     const config = fs.readFileSync(configPath, "utf8");
-    expect(config).toContain('model = "gpt-5.5"');
+    expect(config).not.toContain('model = "gpt-5.5"');
+    expect(config).toContain(`model = "${TEST_LLM_MODEL}"`);
     expect(config).toContain("[mcp_servers.tropass]");
     expect(config).toContain(`url = "${TEST_MCP_URL}"`);
     expect(config).toContain(
       `http_headers = { "Authorization" = "Bearer ${TEST_API_TOKEN}" }`,
     );
     expect(config).toContain("tool_timeout_sec = 900");
+    expect(config).toContain('model_provider = "tropass"');
+    expect(config).toContain("[model_providers.tropass]");
+    expect(config).toContain('provider = "openai"');
+    expect(config).toContain(`base_url = "${TEST_LLM_GATEWAY_URL}/v1"`);
+    expect(config).toContain(`experimental_bearer_token = "${TEST_API_TOKEN}"`);
     expect(childProcess.execFileSync).toHaveBeenCalledWith(
       "codex",
       ["mcp", "add", "tropass", "--url", TEST_MCP_URL, "--bearer-token-env-var", "TROPASS_API_TOKEN"],
@@ -161,6 +169,9 @@ describe("installTropassMcp", () => {
     expect(fs.readFileSync(configPath, "utf8")).toContain(
       `Bearer ${TEST_API_TOKEN}`,
     );
+    expect(fs.readFileSync(configPath, "utf8")).toContain(
+      `experimental_bearer_token = "${TEST_API_TOKEN}"`,
+    );
   });
 
   it("writes Claude global config and user memory for terminal agent installs", () => {
@@ -184,6 +195,11 @@ describe("installTropassMcp", () => {
     expect(readJson(result.configPath).mcpServers.tropass.headers.Authorization).toBe(
       `Bearer ${TEST_API_TOKEN}`,
     );
+    expect(readJson(path.join(homeDir, ".claude", "settings.json")).env).toMatchObject({
+      ANTHROPIC_BASE_URL: TEST_LLM_GATEWAY_URL,
+      ANTHROPIC_API_KEY: TEST_API_TOKEN,
+      ANTHROPIC_MODEL: TEST_LLM_MODEL,
+    });
 
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
     expect(instructions).toContain("# User memory");
@@ -212,6 +228,11 @@ describe("installTropassMcp", () => {
     expect(readJson(result.configPath).mcpServers.tropass.headers.Authorization).toBe(
       `Bearer ${TEST_API_TOKEN}`,
     );
+    expect(readJson(path.join(projectDir, ".claude", "settings.json")).env).toMatchObject({
+      ANTHROPIC_BASE_URL: TEST_LLM_GATEWAY_URL,
+      ANTHROPIC_API_KEY: TEST_API_TOKEN,
+      ANTHROPIC_MODEL: TEST_LLM_MODEL,
+    });
 
     const instructions = fs.readFileSync(result.instructionPath, "utf8");
     expect(instructions).toContain(MANAGED_INSTRUCTIONS_BEGIN);
@@ -246,6 +267,7 @@ describe("installTropassMcp", () => {
 
     const config = readJson(result.configPath);
     expect(config.theme).toBe("system");
+    expect(config.model).toBe(`tropass/${TEST_LLM_MODEL}`);
     expect(config.mcp.existing.url).toBe("https://existing.test/mcp");
     expect(config.mcp.tropass).toEqual({
       type: "remote",
@@ -253,6 +275,14 @@ describe("installTropassMcp", () => {
       url: TEST_MCP_URL,
       headers: {
         Authorization: `Bearer ${TEST_API_TOKEN}`,
+      },
+    });
+    expect(config.provider.tropass).toEqual({
+      npm: "@ai-sdk/openai-compatible",
+      name: "Tropass",
+      options: {
+        baseURL: `${TEST_LLM_GATEWAY_URL}/v1`,
+        apiKey: TEST_API_TOKEN,
       },
     });
 
@@ -281,6 +311,10 @@ describe("installTropassMcp", () => {
     expect(readJson(result.configPath).mcp.tropass.headers.Authorization).toBe(
       `Bearer ${TEST_API_TOKEN}`,
     );
+    expect(readJson(result.configPath).provider.tropass.options).toMatchObject({
+      baseURL: `${TEST_LLM_GATEWAY_URL}/v1`,
+      apiKey: TEST_API_TOKEN,
+    });
   });
 
   it("rejects unsupported clients", () => {

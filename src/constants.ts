@@ -1,7 +1,9 @@
 import type {InstallClient} from "./types.js";
 
-export const DEFAULT_MCP_URL = "https://xn--80aqu.xn--80a1adciab.xn--p1ai/mcp";
-export const TROPASS_URL = "https://xn--80a1adciab.xn--p1ai/";
+export const DEFAULT_MCP_URL = "https://апи.тропасс.рф/mcp";
+export const TROPASS_URL = "https://тропасс.рф/";
+export const LLM_GATEWAY_URL = "https://апи.ллм.тропасс.рф";
+export const DEFAULT_LLM_MODEL = "Qwen3.5-397B-A17B-FP8";
 export const DEFAULT_TOKEN_HEADER = "Authorization";
 export const SUPPORTED_INSTALL_CLIENTS = new Set<InstallClient>([
   "codex",

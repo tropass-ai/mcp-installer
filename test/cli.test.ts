@@ -121,7 +121,7 @@ describe("main", () => {
 
     expect(stdout).toContain("Usage: tropass-mcp-install [options] [client]");
     expect(stdout).toContain("Install direct remote Tropass MCP config and agent instructions.");
-    expect(stdout).toContain("Tropass: https://xn--80a1adciab.xn--p1ai/");
+    expect(stdout).toContain("Tropass: https://тропасс.рф/");
     expect(stdout).toContain("codex, claude, or opencode");
     expect(stdout).toContain("install scope: project or global");
     expect(runInstall).not.toHaveBeenCalled();
