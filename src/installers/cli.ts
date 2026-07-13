@@ -1,23 +1,42 @@
+import childProcess from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { spawnSync } from "node:child_process";
 
 const CLIENT_CLI_PACKAGES = {
   claude: "@anthropic-ai/claude-code",
+  codex: "@openai/codex",
   opencode: "opencode-ai"
 } as const;
 
 type CliClient = keyof typeof CLIENT_CLI_PACKAGES;
 
-export function runAgentCli(client: CliClient, args: string[], cwd = process.cwd()): void {
+type RunAgentCliOptions = {
+  cwd?: string;
+  env?: NodeJS.ProcessEnv;
+};
+
+export function runAgentCli(
+  client: CliClient,
+  args: string[],
+  options: RunAgentCliOptions = {}
+): void {
+  const cwd = options.cwd ?? process.cwd();
   const command = resolveCommand(client);
   const commandArgs = command === "npx" ? ["-y", `${CLIENT_CLI_PACKAGES[client]}@latest`, ...args] : args;
-  const result = spawnSync(command, commandArgs, { cwd, encoding: "utf8", stdio: "pipe" });
+  const result = childProcess.spawnSync(command, commandArgs, {
+    cwd,
+    env: options.env ? { ...process.env, ...options.env } : process.env,
+    encoding: "utf8",
+    stdio: "pipe"
+  });
   if (result.status === 0) {
     return;
   }
-  throw new Error(`${client} CLI failed: ${(result.stderr || result.stdout || "unknown error").trim()}`);
+
+  const errorDetail = result.error?.message
+    || (result.stderr || result.stdout || "unknown error").trim();
+  throw new Error(`${client} CLI failed: ${errorDetail}`);
 }
 
 function resolveCommand(command: CliClient): string {
@@ -34,5 +53,5 @@ function resolveCommand(command: CliClient): string {
 }
 
 function commandExists(command: string): boolean {
-  return spawnSync(command, ["--version"], { stdio: "ignore" }).status === 0;
+  return childProcess.spawnSync(command, ["--version"], { stdio: "ignore" }).status === 0;
 }

@@ -22,8 +22,31 @@ const ORIGINAL_USERPROFILE = process.env.USERPROFILE;
 let tempDirs: string[] = [];
 
 beforeEach(() => {
-  vi.spyOn(childProcess, "execFileSync").mockImplementation(
-    (_command: string, args?: readonly string[] | undefined, options?: childProcess.ExecFileSyncOptions | undefined) => {
+  const originalSpawnSync = childProcess.spawnSync.bind(childProcess);
+  vi.spyOn(childProcess, "spawnSync").mockImplementation(
+    ((
+      command: string,
+      args?: readonly string[],
+      options?: childProcess.SpawnSyncOptions,
+    ) => {
+      if (args?.[0] === "--version") {
+        if (command === "codex") {
+          return {
+            status: 0,
+            stdout: Buffer.from(""),
+            stderr: Buffer.from(""),
+            pid: 0,
+            output: [null, Buffer.from(""), Buffer.from("")],
+            signal: null,
+          } satisfies childProcess.SpawnSyncReturns<Buffer>;
+        }
+        return originalSpawnSync(command, args, options);
+      }
+
+      if (command !== "codex") {
+        return originalSpawnSync(command, args, options);
+      }
+
       const codexHome = options?.env?.CODEX_HOME;
       if (typeof codexHome !== "string") {
         throw new Error("CODEX_HOME is required.");
@@ -36,14 +59,23 @@ beforeEach(() => {
       }
 
       const configPath = path.join(codexHome, "config.toml");
-      const existingConfig = fs.existsSync(configPath) ? `${fs.readFileSync(configPath, "utf8").trimEnd()}\n\n` : "";
+      const existingConfig = fs.existsSync(configPath)
+        ? `${fs.readFileSync(configPath, "utf8").trimEnd()}\n\n`
+        : "";
       fs.mkdirSync(codexHome, { recursive: true });
       fs.writeFileSync(
         configPath,
         `${existingConfig}[mcp_servers.tropass]\nurl = "${mcpUrl}"\nbearer_token_env_var = "TROPASS_API_TOKEN"\n`,
       );
-      return Buffer.from("");
-    },
+      return {
+        status: 0,
+        stdout: Buffer.from(""),
+        stderr: Buffer.from(""),
+        pid: 0,
+        output: [null, Buffer.from(""), Buffer.from("")],
+        signal: null,
+      } satisfies childProcess.SpawnSyncReturns<Buffer>;
+    }) as typeof childProcess.spawnSync,
   );
 });
 
@@ -92,14 +124,13 @@ describe("installTropassMcp", () => {
     expect(config).toContain('provider = "openai"');
     expect(config).toContain(`base_url = "${TEST_CUSTOM_LLM_GATEWAY_URL}/v1"`);
     expect(config).toContain(`experimental_bearer_token = "${TEST_API_TOKEN}"`);
-    expect(childProcess.execFileSync).toHaveBeenCalledWith(
+    expect(childProcess.spawnSync).toHaveBeenCalledWith(
       "codex",
       ["mcp", "add", "tropass", "--url", TEST_MCP_URL, "--bearer-token-env-var", "TROPASS_API_TOKEN"],
       expect.objectContaining({
         env: expect.objectContaining({
           CODEX_HOME: path.join(projectDir, ".codex"),
         }),
-        stdio: "ignore",
       }),
     );
 

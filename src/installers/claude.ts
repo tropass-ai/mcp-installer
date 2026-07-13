@@ -48,7 +48,7 @@ export const claudeInstaller: HarnessInstaller = {
       "http",
       "--header",
       `${DEFAULT_TOKEN_HEADER}: ${buildBearerToken(options.apiToken)}`
-    ], projectDir);
+    ], { cwd: projectDir });
   },
 
   installProvider(options) {
