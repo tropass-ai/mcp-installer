@@ -1,10 +1,9 @@
-import childProcess from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import process from "node:process";
 
 import { DEFAULT_LLM_MODEL, DEFAULT_TOKEN_HEADER } from "../constants.js";
 import { buildSkillContents } from "../instructions.js";
+import { runAgentCli } from "./cli.js";
 import type { HarnessInstaller } from "./types.js";
 import {
   buildBearerToken,
@@ -44,16 +43,10 @@ export const codexInstaller: HarnessInstaller = {
 };
 
 function runCodexMcpAdd(codexHome: string, mcpUrl: string): void {
-  childProcess.execFileSync(
+  runAgentCli(
     "codex",
     ["mcp", "add", "tropass", "--url", mcpUrl, "--bearer-token-env-var", CODEX_TOKEN_ENV_VAR],
-    {
-      env: {
-        ...process.env,
-        CODEX_HOME: codexHome
-      },
-      stdio: "ignore"
-    }
+    { env: { CODEX_HOME: codexHome } }
   );
 }
 
