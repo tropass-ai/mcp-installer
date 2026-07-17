@@ -1,10 +1,10 @@
 import process from "node:process";
 
-import { Box, render, Text, useApp } from "ink";
+import { Box, render, Text, useApp, useInput, usePaste } from "ink";
 import Link from "ink-link";
 import SelectInput from "ink-select-input";
 import TextInput from "ink-text-input";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { TROPASS_URL } from "./constants.js";
 import type { InstallClient, InstallOptions, InstallResult, InstallScope } from "./types.js";
@@ -183,7 +183,7 @@ function InstallerWizard({
         {step === "token" && (
           <>
             <Text bold>Tropass API token</Text>
-            <TextInput value={apiToken} onChange={setApiToken} onSubmit={submitToken} mask="*" />
+            <TokenInput value={apiToken} onChange={setApiToken} onSubmit={submitToken} />
           </>
         )}
       </Box>
@@ -205,6 +205,55 @@ function InstallerWizard({
     if (!values.llmUrlConfirmed) return "llm-url";
     return "token";
   }
+}
+
+function TokenInput({
+  value,
+  onChange,
+  onSubmit
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onSubmit: (value: string) => void;
+}): React.JSX.Element {
+  const valueRef = useRef(value);
+  valueRef.current = value;
+
+  useInput((input, key) => {
+    if (key.return) {
+      onSubmit(valueRef.current);
+      return;
+    }
+    if (key.backspace || key.delete) {
+      const next = valueRef.current.slice(0, -1);
+      valueRef.current = next;
+      onChange(next);
+      return;
+    }
+    if (
+      key.upArrow
+      || key.downArrow
+      || key.leftArrow
+      || key.rightArrow
+      || key.tab
+      || key.escape
+      || key.ctrl
+      || key.meta
+    ) {
+      return;
+    }
+    const next = valueRef.current + input;
+    valueRef.current = next;
+    onChange(next);
+  });
+
+  usePaste((text) => {
+    const next = valueRef.current + text.replace(/[\r\n\t]+/g, "");
+    valueRef.current = next;
+    onChange(next);
+  });
+
+  return <Text>{value.length > 0 ? "*".repeat(value.length) : " "}</Text>;
 }
 
 function defaultScopeForClient(client: InstallClient): InstallScope {
