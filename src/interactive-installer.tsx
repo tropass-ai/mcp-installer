@@ -127,7 +127,7 @@ function InstallerWizard({
         )}
         {step === "mcp-url" && (
           <>
-            <Text bold>Tropass model API gateway URL</Text>
+            <Text bold>Tropass model API gateway base URL</Text>
             <TextInput
               value={mcpUrl}
               onChange={setMcpUrl}

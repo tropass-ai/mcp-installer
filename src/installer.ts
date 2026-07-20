@@ -62,7 +62,9 @@ function normalizeInstallOptions(options: RawInstallOptions): InstallOptions {
   const apiToken = options.token ?? options.apiToken ?? process.env.TROPASS_API_TOKEN;
   const scope = normalizeScopeOption(options);
   const normalizedOptions: InstallOptions = {
-    mcpUrl: options.url ?? options.mcpUrl ?? process.env.TROPASS_MCP_URL ?? DEFAULT_MCP_URL,
+    mcpUrl: normalizeMcpUrl(
+      options.url ?? options.mcpUrl ?? process.env.TROPASS_MCP_URL ?? DEFAULT_MCP_URL
+    ),
     llmUrl: stripTrailingSlashes(
       options.llmUrl ?? options.llmGatewayUrl ?? process.env.TROPASS_LLM_URL ?? LLM_GATEWAY_URL
     ),
@@ -146,6 +148,11 @@ function isInstallClient(value: unknown): value is InstallClient {
 
 function stripTrailingSlashes(value: string): string {
   return value.replace(/\/+$/, "");
+}
+
+function normalizeMcpUrl(value: string): string {
+  const url = stripTrailingSlashes(value);
+  return !url || url.endsWith("/mcp") ? url : `${url}/mcp`;
 }
 
 function resolveConfigPath(options: ValidatedInstallOptions): string {

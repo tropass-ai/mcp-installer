@@ -6,7 +6,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { installTropassMcp } from "../src/installer.js";
 
-const TEST_MCP_URL = "https://апи.тропасс.рф/mcp";
+const TEST_MCP_GATEWAY_URL = "https://апи.тропасс.рф";
+const TEST_MCP_URL = `${TEST_MCP_GATEWAY_URL}/mcp`;
 const TEST_LLM_GATEWAY_URL = "https://апи.ллм.тропасс.рф";
 const TEST_LLM_MODEL = "Qwen3.5-397B-A17B-FP8";
 const TEST_API_TOKEN = "test-token";
@@ -44,7 +45,7 @@ describe("installTropassMcp", () => {
 
     const result = installTropassMcp({
       projectDir,
-      mcpUrl: TEST_MCP_URL,
+      mcpUrl: `${TEST_MCP_GATEWAY_URL}/`,
       apiToken: TEST_API_TOKEN,
     });
 
