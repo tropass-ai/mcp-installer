@@ -23,7 +23,7 @@ export function readJsonFile(filePath: string): JsonObject {
 
   const parsedPayload: unknown = JSON.parse(payload);
   if (!isJsonObject(parsedPayload)) {
-    throw new Error(`${filePath} must contain a JSON object.`);
+    throw new Error(`${filePath} должен содержать JSON-объект.`);
   }
   return parsedPayload;
 }
@@ -43,7 +43,7 @@ export function readObjectProperty(payload: JsonObject, key: string): JsonObject
     return {};
   }
   if (!isJsonObject(value)) {
-    throw new Error(`Config field '${key}' must be a JSON object.`);
+    throw new Error(`Поле конфигурации '${key}' должно быть JSON-объектом.`);
   }
   return value;
 }

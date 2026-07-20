@@ -25,8 +25,8 @@ type CompletedInstallOptions = {
 type Step = "scope" | "mcp-url" | "llm-url" | "token";
 
 const SCOPE_ITEMS: Array<{ label: string; value: InstallScope }> = [
-  { label: "Global — configure this user account", value: "global" },
-  { label: "Project — configure the current workspace", value: "project" }
+  { label: "Глобально — для текущего пользователя", value: "global" },
+  { label: "Проект — для текущего рабочего пространства", value: "project" }
 ];
 
 export async function runInteractiveInstaller(
@@ -43,7 +43,7 @@ export async function runInteractiveInstaller(
   }
 
   if (!process.stdin.isTTY) {
-    throw new Error("Interactive installation requires a TTY. Pass --client, --scope, --token, and --yes.");
+    throw new Error("Для интерактивной установки нужен TTY. Передайте --client, --scope, --token и --yes.");
   }
 
   let completedOptions: CompletedInstallOptions | undefined;
@@ -54,7 +54,7 @@ export async function runInteractiveInstaller(
   await instance.waitUntilExit();
 
   if (!completedOptions) {
-    throw new Error("Installation cancelled.");
+    throw new Error("Установка отменена.");
   }
   return completedOptions;
 }
@@ -110,12 +110,12 @@ function InstallerWizard({
         <Link url={TROPASS_URL}>
           <Text bold color="cyan" underline>Tropass</Text>
         </Link>
-        <Text bold color="cyan"> MCP Installer</Text>
+        <Text bold color="cyan"> Установщик MCP</Text>
       </Box>
       <Box marginTop={1} flexDirection="column">
         {step === "scope" && (
           <>
-            <Text bold>Select an install scope</Text>
+            <Text bold>Выберите область установки</Text>
             <SelectInput
               items={SCOPE_ITEMS}
               onSelect={(item) => {
@@ -127,7 +127,7 @@ function InstallerWizard({
         )}
         {step === "mcp-url" && (
           <>
-            <Text bold>Tropass model API gateway base URL</Text>
+            <Text bold>Базовый URL шлюза моделей Tropass</Text>
             <TextInput
               value={mcpUrl}
               onChange={setMcpUrl}
@@ -144,7 +144,7 @@ function InstallerWizard({
         )}
         {step === "llm-url" && (
           <>
-            <Text bold>Tropass LLM gateway URL</Text>
+            <Text bold>URL LLM-шлюза Tropass</Text>
             <TextInput
               value={llmUrl}
               onChange={setLlmUrl}
@@ -161,13 +161,13 @@ function InstallerWizard({
         )}
         {step === "token" && (
           <>
-            <Text bold>Tropass API token</Text>
+            <Text bold>API-токен Tropass</Text>
             <TokenInput value={apiToken} onChange={setApiToken} onSubmit={submitToken} />
           </>
         )}
       </Box>
       <Box marginTop={1}>
-        <Text dimColor>Use ↑/↓ and Enter to continue · Ctrl+C to cancel</Text>
+        <Text dimColor>Используйте ↑/↓ и Enter · Ctrl+C для отмены</Text>
       </Box>
     </Box>
   );
@@ -236,13 +236,13 @@ function TokenInput({
 function InstallResultView({ result }: { result: InstallResult }): React.JSX.Element {
   return (
     <Box flexDirection="column" paddingX={1}>
-      <Text color="green" bold>✓ Tropass MCP installed for {result.client}</Text>
-      <Text>Scope: {result.scope}</Text>
-      <Text>Config: {result.configPath}</Text>
-      <Text>Skills: {result.skillPaths.join(", ")}</Text>
-      <Text dimColor>Restart or reload your MCP client to pick up the new server.</Text>
+      <Text color="green" bold>✓ Tropass MCP настроен для {result.client}</Text>
+      <Text>Область: {result.scope}</Text>
+      <Text>Конфигурация: {result.configPath}</Text>
+      <Text>Инструкции агента: {result.skillPaths.join(", ")}</Text>
+      <Text dimColor>Перезапустите или перезагрузите MCP-клиент.</Text>
       <Text dimColor>
-        Tropass: <Link url={TROPASS_URL}>open website</Link>
+        Tropass: <Link url={TROPASS_URL}>открыть сайт</Link>
       </Text>
     </Box>
   );

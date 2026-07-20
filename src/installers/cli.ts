@@ -26,8 +26,8 @@ export function runAgentCli(
   }
 
   const errorDetail = result.error?.message
-    || (result.stderr || result.stdout || "unknown error").trim();
-  throw new Error(`opencode CLI failed: ${errorDetail}`);
+    || (result.stderr || result.stdout || "неизвестная ошибка").trim();
+  throw new Error(`Ошибка opencode CLI: ${errorDetail}`);
 }
 
 function resolveCommand(): string {

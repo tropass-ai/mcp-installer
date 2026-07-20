@@ -122,12 +122,15 @@ describe("main", () => {
 
     await main();
 
-    expect(stdout).toContain("Usage: tropass-mcp-install [options] [client]");
-    expect(stdout).toContain("Install direct remote Tropass MCP config and agent instructions.");
+    expect(stdout).toContain("Использование: tropass-mcp-install [options] [client]");
+    expect(stdout).toContain("Аргументы:");
+    expect(stdout).toContain("Параметры:");
+    expect(stdout).toContain("Настраивает удалённый MCP-сервер Tropass и инструкции агента.");
     expect(stdout).toContain("Tropass: https://тропасс.рф/");
-    expect(stdout).toContain("MCP client: opencode");
-    expect(stdout).toContain("Tropass LLM gateway URL");
-    expect(stdout).toContain("install scope: global or project");
+    expect(stdout).toContain("MCP-клиент: opencode");
+    expect(stdout).toContain("URL LLM-шлюза Tropass");
+    expect(stdout).toContain("область установки: global или project");
+    expect(stdout).toContain("показать справку");
     expect(runInstall).not.toHaveBeenCalled();
   });
 });

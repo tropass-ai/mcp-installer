@@ -128,7 +128,7 @@ describe("installTropassMcp", () => {
         mcpUrl: TEST_MCP_URL,
         apiToken: TEST_API_TOKEN,
       }),
-    ).toThrow("Unsupported client");
+    ).toThrow("не поддерживается");
   });
 });
 

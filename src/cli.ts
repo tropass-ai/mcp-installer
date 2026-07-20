@@ -1,6 +1,6 @@
 import process from "node:process";
 
-import { Command, CommanderError } from "commander";
+import { Command, CommanderError, Help } from "commander";
 
 import { TROPASS_URL } from "./constants.js";
 import { runInstall } from "./installer.js";
@@ -20,7 +20,7 @@ async function runInstallCommand(args: string[], commandName: string): Promise<v
     if (error instanceof CommanderError && error.exitCode === 0) {
       return;
     }
-    logError("install failed", error);
+    logError("ошибка установки", error);
     process.exit(1);
   }
 }
@@ -28,17 +28,24 @@ async function runInstallCommand(args: string[], commandName: string): Promise<v
 function createInstallCommand(commandName: string): Command {
   return new Command()
     .name(commandName)
-    .description(`Install direct remote Tropass MCP config and agent instructions.\nTropass: ${TROPASS_URL}`)
-    .argument("[client]", "MCP client: opencode")
-    .option("--config <path>", "explicit path to the MCP config file")
-    .option("--url <url>", "Tropass model API gateway base URL")
-    .option("--llm-url <url>", "Tropass LLM gateway URL")
-    .option("--token <token>", "Tropass API token")
-    .option("--scope <scope>", "install scope: global or project")
-    .option("--global", "install into global user config")
-    .option("--local", "install into project/workspace config")
-    .option("--project <dir>", "project/workspace directory for project-local configs")
-    .option("-y, --yes", "accept defaults for non-secret prompts")
+    .description(`Настраивает удалённый MCP-сервер Tropass и инструкции агента.\nTropass: ${TROPASS_URL}`)
+    .argument("[client]", "MCP-клиент: opencode")
+    .option("--config <path>", "путь к файлу конфигурации MCP")
+    .option("--url <url>", "базовый URL шлюза моделей Tropass")
+    .option("--llm-url <url>", "URL LLM-шлюза Tropass")
+    .option("--token <token>", "API-токен Tropass")
+    .option("--scope <scope>", "область установки: global или project")
+    .option("--global", "установить для текущего пользователя")
+    .option("--local", "установить для текущего проекта")
+    .option("--project <dir>", "каталог проекта для локальной конфигурации")
+    .option("-y, --yes", "принять значения по умолчанию, кроме токена")
+    .helpOption("-h, --help", "показать справку")
+    .configureHelp({
+      formatHelp: (command, helper) => new Help().formatHelp(command, helper)
+        .replace("Usage:", "Использование:")
+        .replace("Arguments:", "Аргументы:")
+        .replace("Options:", "Параметры:")
+    })
     .action(async (client: string | undefined, options: RawInstallOptions) => {
       const rawOptions: RawInstallOptions = { ...options };
       if (client !== undefined) {

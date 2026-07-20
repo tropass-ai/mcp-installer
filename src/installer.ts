@@ -44,7 +44,7 @@ export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult 
   const options = validateInstallOptions(normalizeInstallOptions(rawOptions));
 
   const configPath = resolveConfigPath(options);
-  opencodeInstaller.installConfig(options, configPath);
+  opencodeInstaller.installConfig({ ...options, mcpUrl: normalizeMcpUrl(options.mcpUrl) }, configPath);
   opencodeInstaller.installProvider(options, configPath);
 
   const skillPaths = opencodeInstaller.installSkills(resolveSkillsPath(options));
@@ -62,9 +62,7 @@ function normalizeInstallOptions(options: RawInstallOptions): InstallOptions {
   const apiToken = options.token ?? options.apiToken ?? process.env.TROPASS_API_TOKEN;
   const scope = normalizeScopeOption(options);
   const normalizedOptions: InstallOptions = {
-    mcpUrl: normalizeMcpUrl(
-      options.url ?? options.mcpUrl ?? process.env.TROPASS_MCP_URL ?? DEFAULT_MCP_URL
-    ),
+    mcpUrl: options.url ?? options.mcpUrl ?? process.env.TROPASS_MCP_URL ?? DEFAULT_MCP_URL,
     llmUrl: stripTrailingSlashes(
       options.llmUrl ?? options.llmGatewayUrl ?? process.env.TROPASS_LLM_URL ?? LLM_GATEWAY_URL
     ),
@@ -91,13 +89,13 @@ function normalizeInstallOptions(options: RawInstallOptions): InstallOptions {
 function validateInstallOptions(options: InstallOptions): ValidatedInstallOptions {
   const client = validateInstallClient(options.client ?? "opencode");
   if (!options.apiToken) {
-    throw new Error("Tropass API token is required.");
+    throw new Error("Необходимо указать API-токен Tropass.");
   }
   if (!options.mcpUrl) {
-    throw new Error("Tropass MCP URL is required.");
+    throw new Error("Необходимо указать URL Tropass MCP.");
   }
   if (!options.llmUrl) {
-    throw new Error("Tropass LLM URL is required.");
+    throw new Error("Необходимо указать URL Tropass LLM.");
   }
   const scope = validateInstallScope(options.scope ?? resolveDefaultScope());
   return {
@@ -112,12 +110,12 @@ function validateInstallClient(value: unknown): InstallClient {
   if (isInstallClient(value)) {
     return value;
   }
-  throw new Error(`Unsupported client '${value}'. Use one of: ${[...SUPPORTED_INSTALL_CLIENTS].join(", ")}.`);
+  throw new Error(`Клиент '${value}' не поддерживается. Доступные клиенты: ${[...SUPPORTED_INSTALL_CLIENTS].join(", ")}.`);
 }
 
 function normalizeScopeOption(options: RawInstallOptions): string | undefined {
   if (options.global && options.local) {
-    throw new Error("Use only one install scope: --global or --local.");
+    throw new Error("Выберите только одну область установки: --global или --local.");
   }
   if (options.global) {
     return "global";
@@ -139,7 +137,7 @@ function validateInstallScope(value: string): InstallScope {
   if (value === "local") {
     return "project";
   }
-  throw new Error(`Unsupported install scope '${value}'. Use one of: global, project.`);
+  throw new Error(`Область установки '${value}' не поддерживается. Используйте global или project.`);
 }
 
 function isInstallClient(value: unknown): value is InstallClient {

@@ -69,12 +69,12 @@ npx -y @tropass/mcp-installer opencode --scope global --yes
 ## Параметры CLI
 
 ```text
-Usage: tropass-mcp-install [options] [client]
+Использование: tropass-mcp-install [options] [client]
 
-Arguments:
+Аргументы:
   client             MCP-клиент (сейчас поддерживается opencode)
 
-Options:
+Параметры:
   --config <path>    путь к файлу конфигурации
   --url <url>        базовый URL шлюза Tropass MCP
   --llm-url <url>    URL шлюза Tropass LLM
