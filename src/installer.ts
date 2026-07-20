@@ -129,7 +129,7 @@ function normalizeScopeOption(options: RawInstallOptions): string | undefined {
 }
 
 export function resolveDefaultScope(): InstallScope {
-  return "project";
+  return "global";
 }
 
 function validateInstallScope(value: string): InstallScope {
@@ -139,7 +139,7 @@ function validateInstallScope(value: string): InstallScope {
   if (value === "local") {
     return "project";
   }
-  throw new Error(`Unsupported install scope '${value}'. Use one of: project, global.`);
+  throw new Error(`Unsupported install scope '${value}'. Use one of: global, project.`);
 }
 
 function isInstallClient(value: unknown): value is InstallClient {

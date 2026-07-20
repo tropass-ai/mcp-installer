@@ -34,7 +34,7 @@ function createInstallCommand(commandName: string): Command {
     .option("--url <url>", "Tropass model API gateway base URL")
     .option("--llm-url <url>", "Tropass LLM gateway URL")
     .option("--token <token>", "Tropass API token")
-    .option("--scope <scope>", "install scope: project or global")
+    .option("--scope <scope>", "install scope: global or project")
     .option("--global", "install into global user config")
     .option("--local", "install into project/workspace config")
     .option("--project <dir>", "project/workspace directory for project-local configs")

@@ -27,7 +27,7 @@ afterEach(() => {
 });
 
 describe("installTropassMcp", () => {
-  it("defaults to OpenCode project config and copies native skills", () => {
+  it("writes OpenCode project config and copies native skills", () => {
     const projectDir = createTempDir();
     const configPath = path.join(projectDir, "opencode.json");
     const agentsPath = path.join(projectDir, "AGENTS.md");
@@ -45,6 +45,7 @@ describe("installTropassMcp", () => {
 
     const result = installTropassMcp({
       projectDir,
+      scope: "project",
       mcpUrl: `${TEST_MCP_GATEWAY_URL}/`,
       apiToken: TEST_API_TOKEN,
     });
@@ -89,7 +90,7 @@ describe("installTropassMcp", () => {
     );
   });
 
-  it("writes OpenCode global config to opencode.jsonc", () => {
+  it("defaults to OpenCode global config", () => {
     const homeDir = createTempDir();
     process.env.HOME = homeDir;
     process.env.USERPROFILE = homeDir;
@@ -99,7 +100,6 @@ describe("installTropassMcp", () => {
 
     const result = installTropassMcp({
       client: "opencode",
-      scope: "global",
       configPath,
       mcpUrl: TEST_MCP_URL,
       apiToken: TEST_API_TOKEN,

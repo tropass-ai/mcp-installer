@@ -127,7 +127,7 @@ describe("main", () => {
     expect(stdout).toContain("Tropass: https://тропасс.рф/");
     expect(stdout).toContain("MCP client: opencode");
     expect(stdout).toContain("Tropass LLM gateway URL");
-    expect(stdout).toContain("install scope: project or global");
+    expect(stdout).toContain("install scope: global or project");
     expect(runInstall).not.toHaveBeenCalled();
   });
 });

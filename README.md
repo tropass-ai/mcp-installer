@@ -16,7 +16,7 @@
 npx -y @tropass/mcp-installer
 ```
 
-Установщик попросит выбрать область установки и ввести API-токен. По умолчанию конфигурация создаётся для текущего проекта. После установки перезапустите OpenCode.
+Установщик попросит выбрать область установки и ввести API-токен. По умолчанию конфигурация создаётся глобально для текущего пользователя. После установки перезапустите OpenCode.
 
 ## Что будет настроено
 
@@ -34,16 +34,16 @@ opencode.json
 
 | Режим | Конфигурация | Skills |
 | --- | --- | --- |
-| `project` | `<project>/opencode.json` | `<project>/.opencode/skills` |
 | `global` | `~/.config/opencode/opencode.jsonc` | `~/.config/opencode/skills` |
+| `project` | `<project>/opencode.json` | `<project>/.opencode/skills` |
 
 В Windows глобальная конфигурация находится в `%APPDATA%/opencode`.
 
-Режим можно выбрать интерактивно или флагом `--local` / `--global`:
+Режим можно выбрать интерактивно или флагом `--global` / `--local`:
 
 ```bash
-npx -y @tropass/mcp-installer opencode --local
 npx -y @tropass/mcp-installer opencode --global
+npx -y @tropass/mcp-installer opencode --local
 ```
 
 ## Установка без вопросов
@@ -52,7 +52,7 @@ npx -y @tropass/mcp-installer opencode --global
 
 ```bash
 npx -y @tropass/mcp-installer opencode \
-  --scope project \
+  --scope global \
   --token "your-api-token" \
   --yes
 ```
@@ -63,7 +63,7 @@ npx -y @tropass/mcp-installer opencode \
 export TROPASS_API_TOKEN="your-api-token"
 export TROPASS_MCP_URL="https://апи.тропасс.рф"
 export TROPASS_LLM_URL="https://апи.ллм.тропасс.рф"
-npx -y @tropass/mcp-installer opencode --scope project --yes
+npx -y @tropass/mcp-installer opencode --scope global --yes
 ```
 
 ## Параметры CLI
@@ -79,7 +79,7 @@ Options:
   --url <url>        базовый URL шлюза Tropass MCP
   --llm-url <url>    URL шлюза Tropass LLM
   --token <token>    API-токен Tropass
-  --scope <scope>    область установки: project или global
+  --scope <scope>    область установки: global или project
   --global           глобальная установка
   --local            установка в текущий проект
   --project <dir>    каталог проекта

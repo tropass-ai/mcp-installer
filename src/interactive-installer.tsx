@@ -25,8 +25,8 @@ type CompletedInstallOptions = {
 type Step = "scope" | "mcp-url" | "llm-url" | "token";
 
 const SCOPE_ITEMS: Array<{ label: string; value: InstallScope }> = [
-  { label: "Project — configure the current workspace", value: "project" },
-  { label: "Global — configure this user account", value: "global" }
+  { label: "Global — configure this user account", value: "global" },
+  { label: "Project — configure the current workspace", value: "project" }
 ];
 
 export async function runInteractiveInstaller(
