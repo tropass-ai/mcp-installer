@@ -1,4 +1,9 @@
-# Tropass MCP Instructions
+---
+name: tropass-gateway
+description: Use when calling Tropass ML models through the Tropass MCP server, selecting models, preparing model inputs, handling file URL arguments, or interpreting model results.
+---
+
+# Tropass Gateway MCP
 
 Use the Tropass MCP server to call ML models.
 

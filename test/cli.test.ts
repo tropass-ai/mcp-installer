@@ -42,7 +42,7 @@ describe("main", () => {
     process.argv = [
       "node",
       "/usr/local/bin/tropass-mcp-install",
-      "claude",
+      "opencode",
       "--config",
       "/tmp/mcp.json",
       "--url",
@@ -62,7 +62,7 @@ describe("main", () => {
     await main();
 
     expect(runInstall).toHaveBeenCalledWith({
-      client: "claude",
+      client: "opencode",
       config: "/tmp/mcp.json",
       url: "https://example.test/mcp",
       llmUrl: "https://llm.example.test",
@@ -77,7 +77,7 @@ describe("main", () => {
     process.argv = [
       "node",
       "/usr/local/bin/tropass-mcp-install",
-      "codex",
+      "opencode",
       "--token",
       "token-123",
       "--global",
@@ -88,7 +88,7 @@ describe("main", () => {
     await main();
 
     expect(runInstall).toHaveBeenCalledWith({
-      client: "codex",
+      client: "opencode",
       token: "token-123",
       global: true,
       yes: true
@@ -125,7 +125,7 @@ describe("main", () => {
     expect(stdout).toContain("Usage: tropass-mcp-install [options] [client]");
     expect(stdout).toContain("Install direct remote Tropass MCP config and agent instructions.");
     expect(stdout).toContain("Tropass: https://тропасс.рф/");
-    expect(stdout).toContain("codex, claude, or opencode");
+    expect(stdout).toContain("MCP client: opencode");
     expect(stdout).toContain("Tropass LLM gateway URL");
     expect(stdout).toContain("install scope: project or global");
     expect(runInstall).not.toHaveBeenCalled();

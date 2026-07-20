@@ -29,7 +29,7 @@ function createInstallCommand(commandName: string): Command {
   return new Command()
     .name(commandName)
     .description(`Install direct remote Tropass MCP config and agent instructions.\nTropass: ${TROPASS_URL}`)
-    .argument("[client]", "MCP client: codex, claude, or opencode")
+    .argument("[client]", "MCP client: opencode")
     .option("--config <path>", "explicit path to the MCP config file")
     .option("--url <url>", "Tropass model API gateway URL")
     .option("--llm-url <url>", "Tropass LLM gateway URL")

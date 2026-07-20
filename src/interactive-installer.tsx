@@ -10,7 +10,7 @@ import { TROPASS_URL } from "./constants.js";
 import type { InstallClient, InstallOptions, InstallResult, InstallScope } from "./types.js";
 
 type InteractiveInstallOptions = Omit<InstallOptions, "client" | "scope"> & {
-  client: InstallClient | undefined;
+  client: InstallClient;
   scope: InstallScope | undefined;
 };
 
@@ -22,13 +22,7 @@ type CompletedInstallOptions = {
   apiToken: string;
 };
 
-type Step = "client" | "scope" | "mcp-url" | "llm-url" | "token";
-
-const CLIENT_ITEMS: Array<{ label: string; value: InstallClient }> = [
-  { label: "Codex", value: "codex" },
-  { label: "Claude", value: "claude" },
-  { label: "OpenCode", value: "opencode" }
-];
+type Step = "scope" | "mcp-url" | "llm-url" | "token";
 
 const SCOPE_ITEMS: Array<{ label: string; value: InstallScope }> = [
   { label: "Project — configure the current workspace", value: "project" },
@@ -78,7 +72,7 @@ function InstallerWizard({
   onComplete: (options: CompletedInstallOptions) => void;
 }): React.JSX.Element {
   const { exit } = useApp();
-  const [client, setClient] = useState(options.client);
+  const client = options.client;
   const [scope, setScope] = useState(options.scope);
   const [mcpUrl, setMcpUrl] = useState(options.mcpUrl);
   const [llmUrl, setLlmUrl] = useState(options.llmUrl);
@@ -86,7 +80,7 @@ function InstallerWizard({
   const [mcpUrlConfirmed, setMcpUrlConfirmed] = useState(options.yes);
   const [llmUrlConfirmed, setLlmUrlConfirmed] = useState(options.yes);
 
-  const step = resolveStep({ client, scope, mcpUrlConfirmed, llmUrlConfirmed });
+  const step = resolveStep({ scope, mcpUrlConfirmed, llmUrlConfirmed });
 
   const complete = (values: {
     client: InstallClient | undefined;
@@ -99,15 +93,6 @@ function InstallerWizard({
       onComplete({ ...values, client: values.client, scope: values.scope, apiToken: values.apiToken });
       exit();
     }
-  };
-
-  const selectClient = (item: { value: InstallClient }): void => {
-    const selectedScope = scope ?? (options.yes ? defaultScopeForClient(item.value) : undefined);
-    setClient(item.value);
-    if (selectedScope) {
-      setScope(selectedScope);
-    }
-    complete({ client: item.value, scope: selectedScope, mcpUrl, llmUrl, apiToken });
   };
 
   const submitToken = (value: string): void => {
@@ -128,12 +113,6 @@ function InstallerWizard({
         <Text bold color="cyan"> MCP Installer</Text>
       </Box>
       <Box marginTop={1} flexDirection="column">
-        {step === "client" && (
-          <>
-            <Text bold>Select an MCP client</Text>
-            <SelectInput items={CLIENT_ITEMS} onSelect={selectClient} />
-          </>
-        )}
         {step === "scope" && (
           <>
             <Text bold>Select an install scope</Text>
@@ -194,12 +173,10 @@ function InstallerWizard({
   );
 
   function resolveStep(values: {
-    client: InstallClient | undefined;
     scope: InstallScope | undefined;
     mcpUrlConfirmed: boolean;
     llmUrlConfirmed: boolean;
   }): Step {
-    if (!values.client) return "client";
     if (!values.scope) return "scope";
     if (!values.mcpUrlConfirmed) return "mcp-url";
     if (!values.llmUrlConfirmed) return "llm-url";
@@ -256,18 +233,13 @@ function TokenInput({
   return <Text>{value.length > 0 ? "*".repeat(value.length) : " "}</Text>;
 }
 
-function defaultScopeForClient(client: InstallClient): InstallScope {
-  void client;
-  return "project";
-}
-
 function InstallResultView({ result }: { result: InstallResult }): React.JSX.Element {
   return (
     <Box flexDirection="column" paddingX={1}>
       <Text color="green" bold>✓ Tropass MCP installed for {result.client}</Text>
       <Text>Scope: {result.scope}</Text>
       <Text>Config: {result.configPath}</Text>
-      <Text>Instructions: {result.instructionPath}</Text>
+      <Text>Skills: {result.skillPaths.join(", ")}</Text>
       <Text dimColor>Restart or reload your MCP client to pick up the new server.</Text>
       <Text dimColor>
         Tropass: <Link url={TROPASS_URL}>open website</Link>

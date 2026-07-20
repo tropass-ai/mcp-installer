@@ -1,3 +1,8 @@
+---
+name: agent-response-display
+description: Interpret Tropass MCP/ML agent response schemas for UI display. Use when parsing, validating, rendering, transforming, debugging, or designing frontend/backend handling for AgentResponse, AgentPanelOutput, AgentPrimaryData, AgentPlotData, descriptions, media, attachments, panel ordering, chart data, or streamed panel results.
+---
+
 # Agent Response Display
 
 Interpret Tropass MCP/ML agent responses as ordered UI panels. Use `structuredContent` as the source of truth; use text content only as serialized fallback JSON.

@@ -3,15 +3,10 @@ import process from "node:process";
 
 import { DEFAULT_MCP_URL, LLM_GATEWAY_URL, SUPPORTED_INSTALL_CLIENTS } from "./constants.js";
 import { runInteractiveInstaller, writeInstallResult } from "./interactive-installer.js";
-import { resolveHarnessInstaller } from "./installers/index.js";
+import { opencodeInstaller } from "./installers/opencode.js";
 import {
   expandHome,
-  resolveCodexConfigPath,
-  resolveCodexSkillsPath,
-  resolveClaudeCodeConfigPath,
-  resolveClaudeCodeInstructionPath,
-  resolveOpenCodeConfigPath,
-  resolveOpenCodeInstructionPath
+  resolveOpenCodeConfigPath
 } from "./path-utils.js";
 import type {
   InstallClient,
@@ -24,11 +19,11 @@ import type {
 
 export async function runInstall(rawOptions: RawInstallOptions = {}): Promise<void> {
   const options = normalizeInstallOptions(rawOptions);
-  const client = options.client !== undefined ? validateInstallClient(options.client) : undefined;
+  const client = validateInstallClient(options.client ?? "opencode");
   const scope = options.scope !== undefined
     ? validateInstallScope(options.scope)
-    : options.yes && client !== undefined
-      ? resolveDefaultScope(client)
+    : options.yes
+      ? resolveDefaultScope()
       : undefined;
 
   const interactiveOptions = await runInteractiveInstaller({
@@ -47,20 +42,18 @@ export async function runInstall(rawOptions: RawInstallOptions = {}): Promise<vo
 
 export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult {
   const options = validateInstallOptions(normalizeInstallOptions(rawOptions));
-  const installer = resolveHarnessInstaller(options.client);
 
-  const configPath = resolveConfigPath(options.client, options);
-  installer.installConfig(options, configPath);
-  installer.installProvider(options, configPath);
+  const configPath = resolveConfigPath(options);
+  opencodeInstaller.installConfig(options, configPath);
+  opencodeInstaller.installProvider(options, configPath);
 
-  const instructionPath = resolveInstructionPath(options.client, options);
-  installer.installInstructions(options, instructionPath);
+  const skillPaths = opencodeInstaller.installSkills(resolveSkillsPath(options));
 
   return {
     client: options.client,
     scope: options.scope,
     configPath,
-    instructionPath
+    skillPaths
   };
 }
 
@@ -94,7 +87,7 @@ function normalizeInstallOptions(options: RawInstallOptions): InstallOptions {
 }
 
 function validateInstallOptions(options: InstallOptions): ValidatedInstallOptions {
-  const client = validateInstallClient(options.client);
+  const client = validateInstallClient(options.client ?? "opencode");
   if (!options.apiToken) {
     throw new Error("Tropass API token is required.");
   }
@@ -104,7 +97,7 @@ function validateInstallOptions(options: InstallOptions): ValidatedInstallOption
   if (!options.llmUrl) {
     throw new Error("Tropass LLM URL is required.");
   }
-  const scope = validateInstallScope(options.scope ?? resolveDefaultScope(client));
+  const scope = validateInstallScope(options.scope ?? resolveDefaultScope());
   return {
     ...options,
     client,
@@ -133,8 +126,7 @@ function normalizeScopeOption(options: RawInstallOptions): string | undefined {
   return options.scope;
 }
 
-export function resolveDefaultScope(client: InstallClient): InstallScope {
-  void client;
+export function resolveDefaultScope(): InstallScope {
   return "project";
 }
 
@@ -156,35 +148,18 @@ function stripTrailingSlashes(value: string): string {
   return value.replace(/\/+$/, "");
 }
 
-function resolveConfigPath(client: InstallClient, options: ValidatedInstallOptions): string {
+function resolveConfigPath(options: ValidatedInstallOptions): string {
   if (options.configPath) {
     return path.resolve(expandHome(options.configPath));
   }
 
   const projectDir = path.resolve(expandHome(options.projectDir));
-  if (client === "codex") {
-    return options.scope === "global" ? resolveCodexConfigPath() : path.join(projectDir, ".codex", "config.toml");
-  }
-  if (client === "claude") {
-    return options.scope === "global" ? resolveClaudeCodeConfigPath() : path.join(projectDir, ".mcp.json");
-  }
-  if (client === "opencode") {
-    return options.scope === "global" ? resolveOpenCodeConfigPath() : path.join(projectDir, "opencode.json");
-  }
-  throw new Error(`Unsupported client '${client}'.`);
+  return options.scope === "global" ? resolveOpenCodeConfigPath() : path.join(projectDir, "opencode.json");
 }
 
-function resolveInstructionPath(client: InstallClient, options: ValidatedInstallOptions): string {
+function resolveSkillsPath(options: ValidatedInstallOptions): string {
   const projectDir = path.resolve(expandHome(options.projectDir));
-  if (client === "codex") {
-    const skillsPath = options.scope === "global" ? resolveCodexSkillsPath() : path.join(projectDir, ".codex", "skills");
-    return path.join(skillsPath, "tropass-gateway", "SKILL.md");
-  }
-  if (client === "claude") {
-    return options.scope === "global" ? resolveClaudeCodeInstructionPath() : path.join(projectDir, "CLAUDE.md");
-  }
-  if (client === "opencode") {
-    return options.scope === "global" ? resolveOpenCodeInstructionPath() : path.join(projectDir, "AGENTS.md");
-  }
-  throw new Error(`Unsupported client '${client}'.`);
+  return options.scope === "global"
+    ? path.join(path.dirname(resolveOpenCodeConfigPath()), "skills")
+    : path.join(projectDir, ".opencode", "skills");
 }

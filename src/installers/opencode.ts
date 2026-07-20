@@ -1,26 +1,28 @@
 import fs from "node:fs";
+import path from "node:path";
+import {fileURLToPath} from "node:url";
 
 import {DEFAULT_LLM_MODEL, DEFAULT_TOKEN_HEADER} from "../constants.js";
-import {
-  buildInstructionContent,
-  MANAGED_INSTRUCTIONS_BEGIN,
-  MANAGED_INSTRUCTIONS_END,
-} from "../instructions.js";
 import type {HarnessInstaller} from "./types.js";
 import {
   buildBearerToken,
   readJsonFile,
   readObjectProperty,
   stripBearerToken,
-  upsertManagedBlock,
   writeJsonFile,
 } from "./shared.js";
 import {runAgentCli} from "./cli.js";
 
+const PACKAGED_SKILLS_DIRECTORY = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  "../../skills",
+);
+const SKILL_NAMES = ["tropass-gateway", "agent-response-display"];
+
 export const opencodeInstaller: HarnessInstaller = {
   installConfig(options, configPath) {
     if (options.scope === "global" && !options.configPath) {
-      runAgentCli("opencode", [
+      runAgentCli([
         "mcp",
         "add",
         "tropass",
@@ -43,13 +45,9 @@ export const opencodeInstaller: HarnessInstaller = {
     writeOpenCodeProvider(configPath, options.apiToken, options.llmUrl);
   },
 
-  installInstructions(options, instructionPath) {
-    upsertManagedBlock(
-      instructionPath,
-      buildInstructionContent(options.client),
-      MANAGED_INSTRUCTIONS_BEGIN,
-      MANAGED_INSTRUCTIONS_END,
-    );
+  installSkills(skillsPath) {
+    fs.cpSync(PACKAGED_SKILLS_DIRECTORY, skillsPath, {recursive: true, force: true});
+    return SKILL_NAMES.map((name) => path.join(skillsPath, name, "SKILL.md"));
   },
 };
 

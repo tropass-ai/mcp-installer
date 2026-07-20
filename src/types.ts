@@ -1,4 +1,4 @@
-export type InstallClient = "codex" | "claude" | "opencode";
+export type InstallClient = "opencode";
 export type InstallScope = "project" | "global";
 
 export type RawInstallOptions = {
@@ -40,7 +40,7 @@ export type InstallResult = {
   client: InstallClient;
   scope: InstallScope;
   configPath: string;
-  instructionPath: string;
+  skillPaths: string[];
 };
 
 export type JsonObject = Record<string, unknown>;

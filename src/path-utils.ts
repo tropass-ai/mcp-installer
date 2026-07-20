@@ -12,22 +12,6 @@ export function expandHome(filePath: string): string {
   return filePath;
 }
 
-export function resolveClaudeCodeConfigPath(): string {
-  return path.join(process.env.HOME || process.env.USERPROFILE || "", ".claude.json");
-}
-
-export function resolveClaudeCodeInstructionPath(): string {
-  return path.join(process.env.HOME || process.env.USERPROFILE || "", ".claude", "CLAUDE.md");
-}
-
-export function resolveCodexConfigPath(): string {
-  return path.join(process.env.HOME || process.env.USERPROFILE || "", ".codex", "config.toml");
-}
-
-export function resolveCodexSkillsPath(): string {
-  return path.join(process.env.HOME || process.env.USERPROFILE || "", ".codex", "skills");
-}
-
 export function resolveOpenCodeConfigPath(): string {
   const home = process.env.HOME || process.env.USERPROFILE || "";
   if (process.platform === "win32") {
@@ -35,8 +19,4 @@ export function resolveOpenCodeConfigPath(): string {
     return path.join(appData, "opencode", "opencode.jsonc");
   }
   return path.join(home, ".config", "opencode", "opencode.jsonc");
-}
-
-export function resolveOpenCodeInstructionPath(): string {
-  return path.join(path.dirname(resolveOpenCodeConfigPath()), "AGENTS.md");
 }
