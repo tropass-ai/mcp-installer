@@ -31,9 +31,6 @@ export const opencodeInstaller: HarnessInstaller = {
         "--header",
         `${DEFAULT_TOKEN_HEADER}=${buildBearerToken(options.apiToken)}`,
       ]);
-      if (fs.existsSync(configPath)) {
-        return;
-      }
       writeOpenCodeConfig(configPath, options.mcpUrl, options.apiToken);
       return;
     }
@@ -62,6 +59,7 @@ function writeOpenCodeConfig(
     tropass: {
       type: "remote",
       enabled: true,
+      timeout: 30 * 60 * 1000,
       url: mcpUrl,
       headers: {
         [DEFAULT_TOKEN_HEADER]: buildBearerToken(apiToken),

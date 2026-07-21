@@ -62,6 +62,7 @@ describe("installTropassMcp", () => {
     expect(config.mcp.tropass).toEqual({
       type: "remote",
       enabled: true,
+      timeout: 1_800_000,
       url: TEST_MCP_URL,
       headers: {
         Authorization: `Bearer ${TEST_API_TOKEN}`,
@@ -112,6 +113,7 @@ describe("installTropassMcp", () => {
     ]);
     expect(fs.readFileSync(displaySkillPath, "utf8")).toContain("name: agent-response-display");
     expect(readJson(result.configPath).mcp.tropass.url).toBe(TEST_MCP_URL);
+    expect(readJson(result.configPath).mcp.tropass.timeout).toBe(1_800_000);
     expect(readJson(result.configPath).mcp.tropass.headers.Authorization).toBe(
       `Bearer ${TEST_API_TOKEN}`,
     );
