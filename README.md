@@ -37,7 +37,7 @@ opencode.json
 | `global` | `~/.config/opencode/opencode.jsonc` | `~/.config/opencode/skills` |
 | `project` | `<project>/opencode.json` | `<project>/.opencode/skills` |
 
-В Windows глобальная конфигурация находится в `%APPDATA%/opencode`.
+На всех платформах, включая Windows, глобальный путь — `~/.config/opencode` (то есть `%USERPROFILE%\.config\opencode`).
 
 Режим можно выбрать интерактивно или флагом `--global` / `--local`:
 

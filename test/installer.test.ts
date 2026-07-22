@@ -13,6 +13,9 @@ const TEST_LLM_MODEL = "Qwen3.5-397B-A17B-FP8";
 const TEST_API_TOKEN = "test-token";
 const ORIGINAL_HOME = process.env.HOME;
 const ORIGINAL_USERPROFILE = process.env.USERPROFILE;
+const ORIGINAL_XDG_CONFIG_HOME = process.env.XDG_CONFIG_HOME;
+const ORIGINAL_OPENCODE_CONFIG = process.env.OPENCODE_CONFIG;
+const ORIGINAL_OPENCODE_CONFIG_DIR = process.env.OPENCODE_CONFIG_DIR;
 
 let tempDirs: string[] = [];
 
@@ -20,6 +23,9 @@ afterEach(() => {
   vi.restoreAllMocks();
   process.env.HOME = ORIGINAL_HOME;
   process.env.USERPROFILE = ORIGINAL_USERPROFILE;
+  restoreEnv("XDG_CONFIG_HOME", ORIGINAL_XDG_CONFIG_HOME);
+  restoreEnv("OPENCODE_CONFIG", ORIGINAL_OPENCODE_CONFIG);
+  restoreEnv("OPENCODE_CONFIG_DIR", ORIGINAL_OPENCODE_CONFIG_DIR);
   for (const tempDir of tempDirs) {
     fs.rmSync(tempDir, { recursive: true, force: true });
   }
@@ -95,6 +101,9 @@ describe("installTropassMcp", () => {
     const homeDir = createTempDir();
     process.env.HOME = homeDir;
     process.env.USERPROFILE = homeDir;
+    delete process.env.XDG_CONFIG_HOME;
+    delete process.env.OPENCODE_CONFIG;
+    delete process.env.OPENCODE_CONFIG_DIR;
     const configPath = path.join(homeDir, ".config", "opencode", "opencode.jsonc");
     const skillsPath = path.join(homeDir, ".config", "opencode", "skills");
     const displaySkillPath = path.join(skillsPath, "agent-response-display", "SKILL.md");
@@ -138,6 +147,14 @@ function createTempDir(): string {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "tropass-mcp-installer-"));
   tempDirs.push(tempDir);
   return tempDir;
+}
+
+function restoreEnv(key: string, value: string | undefined): void {
+  if (value === undefined) {
+    delete process.env[key];
+  } else {
+    process.env[key] = value;
+  }
 }
 
 function writeJson(filePath: string, payload: unknown): void {
