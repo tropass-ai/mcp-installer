@@ -13,13 +13,12 @@ export function runAgentCli(
   options: RunAgentCliOptions = {}
 ): void {
   const cwd = options.cwd ?? process.cwd();
-  const command = resolveCommand();
-  const commandArgs = command === "npx" ? ["-y", "opencode-ai@latest", ...args] : args;
+  const { command, commandArgs } = resolveCommand(args);
   const result = childProcess.spawnSync(command, commandArgs, {
     cwd,
     env: options.env ? { ...process.env, ...options.env } : process.env,
     encoding: "utf8",
-    stdio: "pipe"
+    stdio: "pipe",
   });
   if (result.status === 0) {
     return;
@@ -30,18 +29,38 @@ export function runAgentCli(
   throw new Error(`Ошибка opencode CLI: ${errorDetail}`);
 }
 
-function resolveCommand(): string {
-  const command = "opencode";
-  if (commandExists(command)) {
-    return command;
+function resolveCommand(args: string[]): { command: string; commandArgs: string[] } {
+  if (commandExists("opencode")) {
+    return { command: "opencode", commandArgs: args };
   }
 
-  const localCommand = path.resolve("node_modules", ".bin", process.platform === "win32" ? `${command}.cmd` : command);
-  if (fs.existsSync(localCommand)) {
-    return localCommand;
+  const localCommand = path.resolve(
+    "node_modules",
+    ".bin",
+    process.platform === "win32" ? "opencode.cmd" : "opencode",
+  );
+  if (fs.existsSync(localCommand) && process.platform !== "win32") {
+    return { command: localCommand, commandArgs: args };
   }
 
-  return "npx";
+  if (process.platform === "win32") {
+    const npxCli = path.join(
+      path.dirname(process.execPath),
+      "node_modules",
+      "npm",
+      "bin",
+      "npx-cli.js",
+    );
+    if (!fs.existsSync(npxCli)) {
+      throw new Error(`Не найден npx-cli.js: ${npxCli}`);
+    }
+    return {
+      command: process.execPath,
+      commandArgs: [npxCli, "-y", "opencode-ai@latest", ...args],
+    };
+  }
+
+  return { command: "npx", commandArgs: ["-y", "opencode-ai@latest", ...args] };
 }
 
 function commandExists(command: string): boolean {

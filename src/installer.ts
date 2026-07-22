@@ -164,7 +164,13 @@ function resolveConfigPath(options: ValidatedInstallOptions): string {
 
 function resolveSkillsPath(options: ValidatedInstallOptions): string {
   const projectDir = path.resolve(expandHome(options.projectDir));
-  return options.scope === "global"
-    ? path.join(path.dirname(resolveOpenCodeConfigPath()), "skills")
-    : path.join(projectDir, ".opencode", "skills");
+  if (options.scope !== "global") {
+    return path.join(projectDir, ".opencode", "skills");
+  }
+
+  if (options.configPath) {
+    return path.join(path.dirname(path.resolve(expandHome(options.configPath))), "skills");
+  }
+
+  return path.join(path.dirname(resolveOpenCodeConfigPath()), "skills");
 }
