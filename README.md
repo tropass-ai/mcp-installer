@@ -13,7 +13,7 @@
 Запустите команду в каталоге проекта:
 
 ```bash
-npx -y @tropass/mcp-installer
+npx -y @tropass/mcp-installer@latest
 ```
 
 Установщик попросит выбрать область установки и ввести API-токен. По умолчанию конфигурация создаётся глобально для текущего пользователя. После установки перезапустите OpenCode.
@@ -42,8 +42,8 @@ opencode.json
 Режим можно выбрать интерактивно или флагом `--global` / `--local`:
 
 ```bash
-npx -y @tropass/mcp-installer opencode --global
-npx -y @tropass/mcp-installer opencode --local
+npx -y @tropass/mcp-installer@latest opencode --global
+npx -y @tropass/mcp-installer@latest opencode --local
 ```
 
 ## Установка без вопросов
@@ -51,7 +51,7 @@ npx -y @tropass/mcp-installer opencode --local
 Для CI и скриптов:
 
 ```bash
-npx -y @tropass/mcp-installer opencode \
+npx -y @tropass/mcp-installer@latest opencode \
   --scope global \
   --token "your-api-token" \
   --yes
@@ -63,7 +63,7 @@ npx -y @tropass/mcp-installer opencode \
 export TROPASS_API_TOKEN="your-api-token"
 export TROPASS_MCP_URL="https://апи.тропасс.рф"
 export TROPASS_LLM_URL="https://апи.ллм.тропасс.рф"
-npx -y @tropass/mcp-installer opencode --scope global --yes
+npx -y @tropass/mcp-installer@latest opencode --scope global --yes
 ```
 
 ## Параметры CLI
