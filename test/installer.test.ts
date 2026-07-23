@@ -10,6 +10,7 @@ const TEST_MCP_GATEWAY_URL = "https://апи.тропасс.рф";
 const TEST_MCP_URL = `${TEST_MCP_GATEWAY_URL}/mcp`;
 const TEST_LLM_GATEWAY_URL = "https://апи.ллм.тропасс.рф";
 const TEST_LLM_MODEL = "Qwen3.5-397B-A17B-FP8";
+const TEST_ADDITIONAL_LLM_MODEL = "GLM-5.2";
 const TEST_API_TOKEN = "test-token";
 const ORIGINAL_HOME = process.env.HOME;
 const ORIGINAL_USERPROFILE = process.env.USERPROFILE;
@@ -84,6 +85,9 @@ describe("installTropassMcp", () => {
       models: {
         [TEST_LLM_MODEL]: {
           name: TEST_LLM_MODEL,
+        },
+        [TEST_ADDITIONAL_LLM_MODEL]: {
+          name: TEST_ADDITIONAL_LLM_MODEL,
         },
       },
     });

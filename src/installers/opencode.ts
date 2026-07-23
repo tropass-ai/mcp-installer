@@ -2,7 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 
-import {DEFAULT_LLM_MODEL, DEFAULT_TOKEN_HEADER} from "../constants.js";
+import {
+  DEFAULT_LLM_MODEL,
+  DEFAULT_TOKEN_HEADER,
+  LLM_MODELS,
+} from "../constants.js";
 import type {HarnessInstaller} from "./types.js";
 import {
   buildBearerToken,
@@ -85,11 +89,9 @@ function writeOpenCodeProvider(
         baseURL: `${llmUrl}/v1`,
         apiKey: stripBearerToken(apiToken),
       },
-      models: {
-        [DEFAULT_LLM_MODEL]: {
-          name: DEFAULT_LLM_MODEL,
-        },
-      },
+      models: Object.fromEntries(
+        LLM_MODELS.map((model) => [model, {name: model}]),
+      ),
     },
   };
   writeJsonFile(configPath, payload);
