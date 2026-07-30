@@ -85,6 +85,10 @@ describe("installTropassMcp", () => {
       models: {
         [TEST_LLM_MODEL]: {
           name: TEST_LLM_MODEL,
+          modalities: {
+            input: ["text", "image"],
+            output: ["text"],
+          },
         },
         [TEST_ADDITIONAL_LLM_MODEL]: {
           name: TEST_ADDITIONAL_LLM_MODEL,

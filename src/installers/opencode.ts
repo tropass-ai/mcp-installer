@@ -90,7 +90,15 @@ function writeOpenCodeProvider(
         apiKey: stripBearerToken(apiToken),
       },
       models: Object.fromEntries(
-        LLM_MODELS.map((model) => [model, {name: model}]),
+        LLM_MODELS.map((model) => [
+          model,
+          {
+            name: model,
+            ...(model === DEFAULT_LLM_MODEL && {
+              modalities: {input: ["text", "image"], output: ["text"]},
+            }),
+          },
+        ]),
       ),
     },
   };
