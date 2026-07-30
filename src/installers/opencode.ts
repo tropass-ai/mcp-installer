@@ -14,6 +14,7 @@ import {
   readObjectProperty,
   stripBearerToken,
   writeJsonFile,
+  writeTextFile,
 } from "./shared.js";
 import {runAgentCli} from "./cli.js";
 
@@ -47,8 +48,15 @@ export const opencodeInstaller: HarnessInstaller = {
   },
 
   installSkills(skillsPath) {
-    fs.cpSync(PACKAGED_SKILLS_DIRECTORY, skillsPath, {recursive: true, force: true});
-    return SKILL_NAMES.map((name) => path.join(skillsPath, name, "SKILL.md"));
+    return SKILL_NAMES.map((name) => {
+      const relativePath = path.join(name, "SKILL.md");
+      const skillPath = path.join(skillsPath, relativePath);
+      writeTextFile(
+        skillPath,
+        fs.readFileSync(path.join(PACKAGED_SKILLS_DIRECTORY, relativePath), "utf8"),
+      );
+      return skillPath;
+    });
   },
 };
 
