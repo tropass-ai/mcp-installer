@@ -48,12 +48,18 @@ export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult 
   opencodeInstaller.installProvider(options, configPath);
 
   const skillPaths = opencodeInstaller.installSkills(resolveSkillsPath(options));
+  const toolPaths = opencodeInstaller.installTools(
+    resolveToolsPath(options),
+    normalizeMcpUrl(options.mcpUrl),
+    options.apiToken,
+  );
 
   return {
     client: options.client,
     scope: options.scope,
     configPath,
-    skillPaths
+    skillPaths,
+    toolPaths
   };
 }
 
@@ -173,4 +179,17 @@ function resolveSkillsPath(options: ValidatedInstallOptions): string {
   }
 
   return path.join(path.dirname(resolveOpenCodeConfigPath()), "skills");
+}
+
+function resolveToolsPath(options: ValidatedInstallOptions): string {
+  const projectDir = path.resolve(expandHome(options.projectDir));
+  if (options.scope !== "global") {
+    return path.join(projectDir, ".opencode", "tools");
+  }
+
+  if (options.configPath) {
+    return path.join(path.dirname(path.resolve(expandHome(options.configPath))), "tools");
+  }
+
+  return path.join(path.dirname(resolveOpenCodeConfigPath()), "tools");
 }

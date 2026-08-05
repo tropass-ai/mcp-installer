@@ -41,6 +41,7 @@ export type InstallResult = {
   scope: InstallScope;
   configPath: string;
   skillPaths: string[];
+  toolPaths: string[];
 };
 
 export type JsonObject = Record<string, unknown>;

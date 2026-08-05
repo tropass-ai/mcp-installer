@@ -5,7 +5,7 @@ description: Use when calling Tropass ML models through the Tropass MCP server, 
 
 # Tropass Gateway MCP
 
-Use the Tropass MCP server to call ML models.
+Use the Tropass MCP server to call ML models. Model calls return a task immediately; results are fetched separately.
 
 ## Tool discovery
 
@@ -27,6 +27,16 @@ Use the Tropass MCP server to call ML models.
 - Respect `enum`, `minimum`, and `maximum`.
 - For file-like inputs, pass arrays of existing Tropass/S3 file URLs.
 - Do not pass local file paths or arbitrary external URLs as file inputs.
+
+## Model call flow
+
+1. Call the model tool. The response is `structuredContent` with `{task_id, status: "distributed"}`. The model is now running.
+2. Store `task_id` from the response.
+3. Call the `wait_for_model_task` tool with `arguments: {task_id}`. This tool blocks until the task completes and returns the final result payload directly — no manual polling needed.
+4. If `wait_for_model_task` returns an error, surface it to the user. Do not retry in a loop.
+   - 404: `task_id` is invalid or belongs to another user.
+   - Timeout: task did not complete within the deadline.
+   - Processing error: model execution failed.
 
 ## Results
 
