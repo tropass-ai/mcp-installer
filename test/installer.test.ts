@@ -44,6 +44,12 @@ describe("installTropassMcp", () => {
     const toolScriptPath = path.join(projectDir, ".opencode", "tools", "wait_for_model_task.py");
     writeJson(configPath, {
       theme: "system",
+      command: {
+        existing: {
+          description: "Existing command",
+          template: "Keep me",
+        },
+      },
       mcp: {
         existing: {
           url: "https://existing.test/mcp",
@@ -69,6 +75,15 @@ describe("installTropassMcp", () => {
     const config = readJson(result.configPath);
     expect(config.theme).toBe("system");
     expect(config.model).toBe(`tropass/${TEST_LLM_MODEL}`);
+    expect(config.command.existing).toEqual({
+      description: "Existing command",
+      template: "Keep me",
+    });
+    expect(config.command.usage.description).toBe("Show Tropass token usage");
+    expect(config.command.usage.template).toContain(
+      Buffer.from(`${TEST_LLM_GATEWAY_URL}/api/token-usage/`).toString("base64"),
+    );
+    expect(config.command.usage.template).toContain(Buffer.from(TEST_API_TOKEN).toString("base64"));
     expect(config.mcp.existing.url).toBe("https://existing.test/mcp");
     expect(config.mcp.tropass).toEqual({
       type: "remote",

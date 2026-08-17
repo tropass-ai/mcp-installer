@@ -9,6 +9,7 @@ import {
   MCP_MODEL_CALL_VERSION_HEADER,
   MCP_MODEL_CALL_VERSION_VALUE,
 } from "../constants.js";
+import type {JsonObject} from "../types.js";
 import type {HarnessInstaller} from "./types.js";
 import {
   buildBearerToken,
@@ -115,8 +116,13 @@ function writeOpenCodeProvider(
   configPath: string,
   apiToken: string,
   llmUrl: string,
-): void {  const payload = readJsonFile(configPath);
+): void {
+  const payload = readJsonFile(configPath);
   payload.model = `tropass/${DEFAULT_LLM_MODEL}`;
+  payload.command = {
+    ...readObjectProperty(payload, "command"),
+    usage: buildTokenUsageCommand(llmUrl, apiToken),
+  };
   payload.provider = {
     ...readObjectProperty(payload, "provider"),
     tropass: {
@@ -140,6 +146,16 @@ function writeOpenCodeProvider(
     },
   };
   writeJsonFile(configPath, payload);
+}
+
+function buildTokenUsageCommand(llmUrl: string, apiToken: string): JsonObject {
+  const url = Buffer.from(`${llmUrl}/api/token-usage/`).toString("base64");
+  const token = Buffer.from(stripBearerToken(apiToken)).toString("base64");
+  const script = `const d=s=>Buffer.from(s,'base64').toString();fetch(d('${url}'),{headers:{Authorization:'Bearer '+d('${token}')}}).then(async r=>{const b=await r.text();if(!r.ok)throw Error('HTTP '+r.status+': '+b);console.log(b)}).catch(e=>{console.error(e.message);process.exit(1)})`;
+  return {
+    description: "Show Tropass token usage",
+    template: `Show this Tropass weekly token usage concisely. Include used, limit, remaining, and reset time. Do not call tools.\n\n!\`node -e "${script}"\``,
+  };
 }
 
 function buildGatewayUrl(mcpUrl: string): string {
