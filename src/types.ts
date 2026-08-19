@@ -42,6 +42,7 @@ export type InstallResult = {
   configPath: string;
   skillPaths: string[];
   toolPaths: string[];
+  pluginPaths: string[];
 };
 
 export type JsonObject = Record<string, unknown>;

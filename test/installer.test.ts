@@ -42,6 +42,7 @@ describe("installTropassMcp", () => {
     const displaySkillPath = path.join(projectDir, ".opencode", "skills", "agent-response-display", "SKILL.md");
     const toolPath = path.join(projectDir, ".opencode", "tools", "wait_for_model_task.ts");
     const toolScriptPath = path.join(projectDir, ".opencode", "tools", "wait_for_model_task.py");
+    const usagePluginPath = path.join(projectDir, ".opencode", "tropass-usage.mjs");
     writeJson(configPath, {
       theme: "system",
       command: {
@@ -56,6 +57,7 @@ describe("installTropassMcp", () => {
         },
       },
     });
+    writeJson(path.join(projectDir, ".opencode", "tui.json"), {plugin: ["existing-plugin"]});
     fs.writeFileSync(agentsPath, "# Existing agent notes\n");
 
     const result = installTropassMcp({
@@ -71,6 +73,7 @@ describe("installTropassMcp", () => {
     expect(result.skillPaths).toEqual([gatewaySkillPath, displaySkillPath]);
 
     expect(result.toolPaths).toEqual([toolPath, toolScriptPath]);
+    expect(result.pluginPaths).toEqual([usagePluginPath]);
 
     const config = readJson(result.configPath);
     expect(config.theme).toBe("system");
@@ -79,11 +82,7 @@ describe("installTropassMcp", () => {
       description: "Existing command",
       template: "Keep me",
     });
-    expect(config.command.usage.description).toBe("Show Tropass token usage");
-    expect(config.command.usage.template).toContain(
-      Buffer.from(`${TEST_LLM_GATEWAY_URL}/api/token-usage/`).toString("base64"),
-    );
-    expect(config.command.usage.template).toContain(Buffer.from(TEST_API_TOKEN).toString("base64"));
+    expect(config.command.usage).toBeUndefined();
     expect(config.mcp.existing.url).toBe("https://existing.test/mcp");
     expect(config.mcp.tropass).toEqual({
       type: "remote",
@@ -130,6 +129,16 @@ describe("installTropassMcp", () => {
     expect(toolScript).toContain("wait_for_model_task");
     expect(toolScript).not.toContain(TEST_MCP_GATEWAY_URL);
     expect(toolScript).not.toContain(TEST_API_TOKEN);
+    const usagePlugin = fs.readFileSync(usagePluginPath, "utf8");
+    expect(usagePlugin).toContain('slashName: "usage"');
+    expect(usagePlugin).toContain(
+      Buffer.from(`${TEST_LLM_GATEWAY_URL}/api/rpc/fetch-token-usage/`).toString("base64"),
+    );
+    expect(usagePlugin).toContain(Buffer.from(TEST_API_TOKEN).toString("base64"));
+    expect(readJson(path.join(projectDir, ".opencode", "tui.json")).plugin).toEqual([
+      "existing-plugin",
+      "./tropass-usage.mjs",
+    ]);
   });
 
   it("defaults to OpenCode global config", () => {
@@ -143,6 +152,7 @@ describe("installTropassMcp", () => {
     const skillsPath = path.join(homeDir, ".config", "opencode", "skills");
     const displaySkillPath = path.join(skillsPath, "agent-response-display", "SKILL.md");
     const globalToolPath = path.join(homeDir, ".config", "opencode", "tools", "wait_for_model_task.ts");
+    const globalUsagePluginPath = path.join(homeDir, ".config", "opencode", "tropass-usage.mjs");
 
     const result = installTropassMcp({
       client: "opencode",
@@ -169,6 +179,10 @@ describe("installTropassMcp", () => {
     });
     expect(fs.readFileSync(globalToolPath, "utf8")).toContain(`GATEWAY_URL = "${TEST_MCP_GATEWAY_URL}"`);
     expect(fs.readFileSync(globalToolPath, "utf8")).toContain(`GATEWAY_API_TOKEN = "${TEST_API_TOKEN}"`);
+    expect(result.pluginPaths).toEqual([globalUsagePluginPath]);
+    expect(readJson(path.join(homeDir, ".config", "opencode", "tui.json")).plugin).toEqual([
+      "./tropass-usage.mjs",
+    ]);
   });
 
   it.each(["codex", "claude"])("rejects removed client %s", (client) => {

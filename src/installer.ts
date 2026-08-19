@@ -53,13 +53,19 @@ export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult 
     normalizeMcpUrl(options.mcpUrl),
     options.apiToken,
   );
+  const pluginPaths = opencodeInstaller.installPlugins(
+    path.dirname(resolveToolsPath(options)),
+    options.llmUrl,
+    options.apiToken,
+  );
 
   return {
     client: options.client,
     scope: options.scope,
     configPath,
     skillPaths,
-    toolPaths
+    toolPaths,
+    pluginPaths
   };
 }
 

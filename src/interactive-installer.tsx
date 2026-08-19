@@ -241,6 +241,7 @@ function InstallResultView({ result }: { result: InstallResult }): React.JSX.Ele
       <Text>Конфигурация: {result.configPath}</Text>
       <Text>Инструкции агента: {result.skillPaths.join(", ")}</Text>
       <Text>Инструменты агента: {result.toolPaths.join(", ")}</Text>
+      <Text>Плагины OpenCode: {result.pluginPaths.join(", ")}</Text>
       <Text dimColor>Перезапустите или перезагрузите MCP-клиент.</Text>
       <Text dimColor>
         Tropass: <Link url={TROPASS_URL}>открыть сайт</Link>

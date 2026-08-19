@@ -5,7 +5,7 @@
 ## Требования
 
 - Node.js 22 или новее;
-- установленный OpenCode;
+- OpenCode 1.17.16 или новее;
 - API-токен Tropass.
 
 ## Быстрый старт
@@ -20,7 +20,7 @@ npx -y @tropass/mcp-installer@latest
 
 ## Что будет настроено
 
-В `opencode.json` будут добавлены MCP-сервер, LLM-провайдер `tropass` с моделями `Qwen3.5-397B-A17B-FP8` и `GLM-5.2`, а также команда `/usage` для проверки недельного остатка токенов. Моделью по умолчанию станет `tropass/Qwen3.5-397B-A17B-FP8`. Остальные разделы конфигурации сохранятся.
+В `opencode.json` будут добавлены MCP-сервер и LLM-провайдер `tropass` с моделями `Qwen3.5-397B-A17B-FP8` и `GLM-5.2`. Нативный TUI-плагин добавит команду `/usage` для проверки недельного остатка токенов без обращения к модели. Моделью по умолчанию станет `tropass/Qwen3.5-397B-A17B-FP8`. Остальные разделы конфигурации сохранятся.
 
 При проектной установке появятся файлы:
 
@@ -28,6 +28,8 @@ npx -y @tropass/mcp-installer@latest
 opencode.json
 .opencode/skills/tropass-gateway/SKILL.md
 .opencode/skills/agent-response-display/SKILL.md
+.opencode/tropass-usage.mjs
+.opencode/tui.json
 ```
 
 ## Область установки
@@ -89,7 +91,7 @@ npx -y @tropass/mcp-installer@latest opencode --scope global --yes
 
 ## Безопасность
 
-API-токен сохраняется в конфигурации OpenCode. Не добавляйте проектный `opencode.json` с токеном в публичный репозиторий.
+API-токен сохраняется в конфигурации OpenCode и файле TUI-плагина. Не добавляйте проектные `opencode.json` и `.opencode/tropass-usage.mjs` в публичный репозиторий.
 
 ## Разработка
 

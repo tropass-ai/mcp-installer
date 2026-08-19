@@ -9,7 +9,6 @@ import {
   MCP_MODEL_CALL_VERSION_HEADER,
   MCP_MODEL_CALL_VERSION_VALUE,
 } from "../constants.js";
-import type {JsonObject} from "../types.js";
 import type {HarnessInstaller} from "./types.js";
 import {
   buildBearerToken,
@@ -32,6 +31,7 @@ const PACKAGED_TOOLS_DIRECTORY = path.resolve(
 const SKILL_NAMES = ["tropass-gateway", "agent-response-display"];
 const TOOL_FILE_NAME = "wait_for_model_task.ts";
 const TOOL_SCRIPT_NAME = "wait_for_model_task.py";
+const USAGE_PLUGIN_FILE_NAME = "tropass-usage.mjs";
 
 export const opencodeInstaller: HarnessInstaller = {
   installConfig(options, configPath) {
@@ -88,6 +88,30 @@ export const opencodeInstaller: HarnessInstaller = {
     );
     return [toolPath, scriptPath];
   },
+
+  installPlugins(configDir, llmUrl, apiToken) {
+    const pluginPath = path.join(configDir, USAGE_PLUGIN_FILE_NAME);
+    const template = fs.readFileSync(
+      path.join(PACKAGED_TOOLS_DIRECTORY, USAGE_PLUGIN_FILE_NAME),
+      "utf8",
+    );
+    writeTextFile(
+      pluginPath,
+      template
+        .replace("{{USAGE_URL}}", Buffer.from(`${llmUrl}/api/rpc/fetch-token-usage/`).toString("base64"))
+        .replace("{{API_TOKEN}}", Buffer.from(stripBearerToken(apiToken)).toString("base64")),
+    );
+
+    const tuiConfigPath = path.join(configDir, "tui.json");
+    const tuiConfig = readJsonFile(tuiConfigPath);
+    const plugins = tuiConfig.plugin;
+    if (plugins !== undefined && !Array.isArray(plugins)) {
+      throw new Error(`Поле конфигурации 'plugin' в ${tuiConfigPath} должно быть массивом.`);
+    }
+    tuiConfig.plugin = [...(plugins ?? []).filter((plugin) => plugin !== `./${USAGE_PLUGIN_FILE_NAME}`), `./${USAGE_PLUGIN_FILE_NAME}`];
+    writeJsonFile(tuiConfigPath, tuiConfig);
+    return [pluginPath];
+  },
 };
 
 function writeOpenCodeConfig(
@@ -119,10 +143,10 @@ function writeOpenCodeProvider(
 ): void {
   const payload = readJsonFile(configPath);
   payload.model = `tropass/${DEFAULT_LLM_MODEL}`;
-  payload.command = {
-    ...readObjectProperty(payload, "command"),
-    usage: buildTokenUsageCommand(llmUrl, apiToken),
-  };
+  const commands = readObjectProperty(payload, "command");
+  delete commands.usage;
+  if (Object.keys(commands).length) payload.command = commands;
+  else delete payload.command;
   payload.provider = {
     ...readObjectProperty(payload, "provider"),
     tropass: {
@@ -146,16 +170,6 @@ function writeOpenCodeProvider(
     },
   };
   writeJsonFile(configPath, payload);
-}
-
-function buildTokenUsageCommand(llmUrl: string, apiToken: string): JsonObject {
-  const url = Buffer.from(`${llmUrl}/api/token-usage/`).toString("base64");
-  const token = Buffer.from(stripBearerToken(apiToken)).toString("base64");
-  const script = `const d=s=>Buffer.from(s,'base64').toString();fetch(d('${url}'),{headers:{Authorization:'Bearer '+d('${token}')}}).then(async r=>{const b=await r.text();if(!r.ok)throw Error('HTTP '+r.status+': '+b);console.log(b)}).catch(e=>{console.error(e.message);process.exit(1)})`;
-  return {
-    description: "Show Tropass token usage",
-    template: `Show this Tropass weekly token usage concisely. Include used, limit, remaining, and reset time. Do not call tools.\n\n!\`node -e "${script}"\``,
-  };
 }
 
 function buildGatewayUrl(mcpUrl: string): string {
