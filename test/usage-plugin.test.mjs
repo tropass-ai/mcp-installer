@@ -38,6 +38,18 @@ describe("native usage plugin", () => {
     expect(output).toContain("Limit      Unlimited");
   });
 
+  it("formats usage before the first request", () => {
+    const output = formatUsage({
+      used_tokens: 0,
+      initial_limit_tokens: null,
+      remaining_tokens: null,
+      reset_at: null,
+    }, "en-US", "UTC");
+
+    expect(output).toContain("Used       0");
+    expect(output).toContain("Resets     Not scheduled");
+  });
+
   it("fetches usage and opens a dialog without session APIs", async () => {
     let command;
     const replace = vi.fn((render) => render());

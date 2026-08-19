@@ -9,7 +9,7 @@ export function formatUsage(data, locale, timeZone) {
   const remainingValue = usage?.remaining ?? usage?.remaining_tokens;
   const limit = limitValue === null ? null : Number(limitValue);
   const remaining = remainingValue === null ? null : Number(remainingValue);
-  const reset = usage?.reset_at ?? usage?.resetAt ?? usage?.reset_time;
+  const reset = usage?.resetAt ?? usage?.reset_time ?? usage?.reset_at;
   if (!Number.isFinite(used) || (limit !== null && !Number.isFinite(limit)) || (remaining !== null && !Number.isFinite(remaining)) || reset === undefined) {
     return JSON.stringify(data, null, 2);
   }
@@ -18,7 +18,7 @@ export function formatUsage(data, locale, timeZone) {
   const filled = percent === null ? 0 : Math.round(percent * 24 / 100);
   const number = new Intl.NumberFormat(locale).format;
   const resetDate = new Date(typeof reset === "number" && reset < 1e12 ? reset * 1000 : reset);
-  const resetText = Number.isNaN(resetDate.valueOf())
+  const resetText = reset === null ? "Not scheduled" : Number.isNaN(resetDate.valueOf())
     ? String(reset)
     : new Intl.DateTimeFormat(locale, {dateStyle: "medium", timeStyle: "short", timeZone}).format(resetDate);
 
