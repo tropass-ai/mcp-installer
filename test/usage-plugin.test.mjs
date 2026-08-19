@@ -24,13 +24,31 @@ describe("native usage plugin", () => {
     expect(formatUsage({message: "unknown"})).toBe('{\n  "message": "unknown"\n}');
   });
 
+  it("formats the unlimited response returned by Tropass", () => {
+    const output = formatUsage({
+      used_tokens: 1152920,
+      initial_limit_tokens: null,
+      remaining_tokens: null,
+      reset_at: "2026-08-19T08:20:19Z",
+    }, "en-US", "UTC");
+
+    expect(output).toContain("──────────────────────── ∞");
+    expect(output).toContain("Used       1,152,920");
+    expect(output).toContain("Remaining  Unlimited");
+    expect(output).toContain("Limit      Unlimited");
+  });
+
   it("fetches usage and opens a dialog without session APIs", async () => {
     let command;
-    const show = vi.fn();
+    const replace = vi.fn((render) => render());
     const toast = vi.fn();
     await plugin.tui({
-      keymap: {registerLayer: ({commands}) => { [command] = commands; }},
-      ui: {DialogAlert: {show}, dialog: {}, toast},
+      command: {register: (commands) => { [command] = commands(); }},
+      ui: {
+        DialogAlert: vi.fn((props) => props),
+        dialog: {clear: vi.fn(), replace},
+        toast,
+      },
     });
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -38,10 +56,14 @@ describe("native usage plugin", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    await command.run();
+    await command.onSelect();
 
     expect(fetchMock).toHaveBeenCalledOnce();
-    expect(show).toHaveBeenCalledWith(expect.anything(), "Tropass usage", expect.stringContaining("25%"));
+    expect(command.slash).toEqual({name: "usage"});
+    expect(replace).toHaveReturnedWith(expect.objectContaining({
+      title: "Tropass usage",
+      message: expect.stringContaining("25%"),
+    }));
     expect(toast).toHaveBeenCalledWith(expect.objectContaining({variant: "info"}));
   });
 });
