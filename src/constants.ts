@@ -7,5 +7,6 @@ export const DEFAULT_LLM_MODEL = "GLM-5.2";
 export const LLM_MODELS = [DEFAULT_LLM_MODEL] as const;
 export const DEFAULT_TOKEN_HEADER = "Authorization";
 export const MCP_MODEL_CALL_VERSION_HEADER = "Tropass-Model-Call-Version";
-export const MCP_MODEL_CALL_VERSION_VALUE = "2";
+export const ASYNC_MODEL_CALL_VERSION = "2";
+export const SYNC_MODEL_CALL_VERSION = "1";
 export const SUPPORTED_INSTALL_CLIENTS = new Set<InstallClient>(["opencode"]);

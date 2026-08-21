@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
+import {commandExists, describeSpawnFailure} from "../spawn.js";
+
 type RunAgentCliOptions = {
   cwd?: string;
   env?: NodeJS.ProcessEnv;
@@ -24,9 +26,7 @@ export function runAgentCli(
     return;
   }
 
-  const errorDetail = result.error?.message
-    || (result.stderr || result.stdout || "неизвестная ошибка").trim();
-  throw new Error(`Ошибка opencode CLI: ${errorDetail}`);
+  throw new Error(`Ошибка opencode CLI: ${describeSpawnFailure(result)}`);
 }
 
 function resolveCommand(args: string[]): { command: string; commandArgs: string[] } {
@@ -61,8 +61,4 @@ function resolveCommand(args: string[]): { command: string; commandArgs: string[
   }
 
   return { command: "npx", commandArgs: ["-y", "opencode-ai@latest", ...args] };
-}
-
-function commandExists(command: string): boolean {
-  return childProcess.spawnSync(command, ["--version"], { stdio: "ignore" }).status === 0;
 }

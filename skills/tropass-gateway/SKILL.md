@@ -30,6 +30,12 @@ Use the Tropass MCP server to call ML models. Model calls return a task immediat
 
 ## Model call flow
 
+This depends on the `Tropass-Model-Call-Version` header the installer wrote into the MCP server config.
+
+With version `1` (synchronous, used when `uvx` is unavailable) the model tool blocks and returns the final result payload itself. There is no `task_id` and no `wait_for_model_task` tool — steps 1-4 below do not apply; read the result straight from `structuredContent`.
+
+With version `2` (asynchronous, the default):
+
 1. Call the model tool. The response is `structuredContent` with `{task_id, status: "distributed"}`. The model is now running.
 2. Store `task_id` from the response.
 3. Call the `wait_for_model_task` tool with `arguments: {task_id}`. This tool blocks until the task completes and returns the final result payload directly — no manual polling needed.

@@ -233,6 +233,24 @@ function TokenInput({
   return <Text>{value.length > 0 ? "*".repeat(value.length) : " "}</Text>;
 }
 
+function UvStatusLine({ result }: { result: InstallResult }): React.JSX.Element {
+  if (result.uvxCommand) {
+    return <Text>uvx: {result.uvxCommand}</Text>;
+  }
+
+  return (
+    <Box flexDirection="column">
+      <Text color="yellow">
+        uvx не найден — MCP настроен на синхронный режим v1 без инструмента wait_for_model_task.
+      </Text>
+      <Text dimColor>
+        Поставьте uv и повторите установку, чтобы включить асинхронный режим v2:
+        https://docs.astral.sh/uv/getting-started/installation/
+      </Text>
+    </Box>
+  );
+}
+
 function InstallResultView({ result }: { result: InstallResult }): React.JSX.Element {
   return (
     <Box flexDirection="column" paddingX={1}>
@@ -240,8 +258,15 @@ function InstallResultView({ result }: { result: InstallResult }): React.JSX.Ele
       <Text>Область: {result.scope}</Text>
       <Text>Конфигурация: {result.configPath}</Text>
       <Text>Инструкции агента: {result.skillPaths.join(", ")}</Text>
-      <Text>Инструменты агента: {result.toolPaths.join(", ")}</Text>
+      {result.toolPaths.length
+        ? <Text>Инструменты агента: {result.toolPaths.join(", ")}</Text>
+        : <Text>Инструменты агента: не нужны в синхронном режиме</Text>}
+      {result.removedToolPaths.length
+        ? <Text dimColor>Удалены инструменты прошлой установки: {result.removedToolPaths.join(", ")}</Text>
+        : null}
+      <Text>Вызов моделей: {result.modelCallVersion === "2" ? "асинхронный (v2)" : "синхронный (v1)"}</Text>
       <Text>Плагины OpenCode: {result.pluginPaths.join(", ")}</Text>
+      <UvStatusLine result={result} />
       <Text dimColor>Перезапустите или перезагрузите MCP-клиент.</Text>
       <Text dimColor>
         Tropass: <Link url={TROPASS_URL}>открыть сайт</Link>

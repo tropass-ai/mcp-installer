@@ -5,6 +5,9 @@ import uuid
 
 from tropass_sdk.client import GatewayClient
 
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+
 
 async def main() -> None:
     task_id = uuid.UUID(sys.argv[1])
