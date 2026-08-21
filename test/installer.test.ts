@@ -108,6 +108,9 @@ describe("installTropassMcp", () => {
             output: ["text"],
           },
         },
+        "tropass-large-llm": {name: "tropass-large-llm"},
+        "tropass-medium-llm": {name: "tropass-medium-llm"},
+        "tropass-small-llm": {name: "tropass-small-llm"},
       },
     });
 
