@@ -157,10 +157,10 @@ function writeOpenCodeProvider(
         apiKey: stripBearerToken(apiToken),
       },
       models: Object.fromEntries(
-        LLM_MODELS.map((model) => [
+        LLM_MODELS.map(([model, name]) => [
           model,
           {
-            name: model,
+            name,
             ...(model === DEFAULT_LLM_MODEL && {
               modalities: {input: ["text", "image"], output: ["text"]},
             }),
