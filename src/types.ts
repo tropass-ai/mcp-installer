@@ -6,10 +6,6 @@ export type RawInstallOptions = {
   client?: string;
   config?: string;
   configPath?: string;
-  url?: string;
-  mcpUrl?: string;
-  llmUrl?: string;
-  llmGatewayUrl?: string;
   token?: string;
   apiToken?: string;
   project?: string;
@@ -24,8 +20,6 @@ export type RawInstallOptions = {
 export type InstallOptions = {
   client?: string;
   configPath?: string;
-  mcpUrl: string;
-  llmUrl: string;
   apiToken?: string;
   projectDir: string;
   scope?: string;
@@ -35,6 +29,8 @@ export type InstallOptions = {
 
 export type ValidatedInstallOptions = Omit<InstallOptions, "client" | "apiToken" | "scope"> & {
   client: InstallClient;
+  mcpUrl: string;
+  llmUrl: string;
   apiToken: string;
   scope: InstallScope;
   modelCallVersion: ModelCallVersion;

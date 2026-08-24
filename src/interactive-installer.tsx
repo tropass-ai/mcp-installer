@@ -3,7 +3,6 @@ import process from "node:process";
 import { Box, render, Text, useApp, useInput, usePaste } from "ink";
 import Link from "ink-link";
 import SelectInput from "ink-select-input";
-import TextInput from "ink-text-input";
 import { useRef, useState } from "react";
 
 import { TROPASS_URL } from "./constants.js";
@@ -17,12 +16,8 @@ type InteractiveInstallOptions = Omit<InstallOptions, "client" | "scope"> & {
 type CompletedInstallOptions = {
   client: InstallClient;
   scope: InstallScope;
-  mcpUrl: string;
-  llmUrl: string;
   apiToken: string;
 };
-
-type Step = "scope" | "mcp-url" | "llm-url" | "token";
 
 const SCOPE_ITEMS: Array<{ label: string; value: InstallScope }> = [
   { label: "Глобально — для текущего пользователя", value: "global" },
@@ -36,8 +31,6 @@ export async function runInteractiveInstaller(
     return {
       client: options.client,
       scope: options.scope,
-      mcpUrl: options.mcpUrl,
-      llmUrl: options.llmUrl,
       apiToken: options.apiToken
     };
   }
@@ -74,22 +67,15 @@ function InstallerWizard({
   const { exit } = useApp();
   const client = options.client;
   const [scope, setScope] = useState(options.scope);
-  const [mcpUrl, setMcpUrl] = useState(options.mcpUrl);
-  const [llmUrl, setLlmUrl] = useState(options.llmUrl);
   const [apiToken, setApiToken] = useState(options.apiToken ?? "");
-  const [mcpUrlConfirmed, setMcpUrlConfirmed] = useState(options.yes);
-  const [llmUrlConfirmed, setLlmUrlConfirmed] = useState(options.yes);
-
-  const step = resolveStep({ scope, mcpUrlConfirmed, llmUrlConfirmed });
+  const step = scope ? "token" : "scope";
 
   const complete = (values: {
     client: InstallClient | undefined;
     scope: InstallScope | undefined;
-    mcpUrl: string;
-    llmUrl: string;
     apiToken: string;
-  }, confirmedMcpUrl = mcpUrlConfirmed, confirmedLlmUrl = llmUrlConfirmed): void => {
-    if (values.client && values.scope && values.apiToken && confirmedMcpUrl && confirmedLlmUrl) {
+  }): void => {
+    if (values.client && values.scope && values.apiToken) {
       onComplete({ ...values, client: values.client, scope: values.scope, apiToken: values.apiToken });
       exit();
     }
@@ -101,7 +87,7 @@ function InstallerWizard({
       return;
     }
     setApiToken(token);
-    complete({ client, scope, mcpUrl, llmUrl, apiToken: token });
+    complete({ client, scope, apiToken: token });
   };
 
   return (
@@ -120,41 +106,7 @@ function InstallerWizard({
               items={SCOPE_ITEMS}
               onSelect={(item) => {
                 setScope(item.value);
-                complete({ client, scope: item.value, mcpUrl, llmUrl, apiToken });
-              }}
-            />
-          </>
-        )}
-        {step === "mcp-url" && (
-          <>
-            <Text bold>Базовый URL шлюза моделей Tropass</Text>
-            <TextInput
-              value={mcpUrl}
-              onChange={setMcpUrl}
-              onSubmit={(value) => {
-                if (value.trim()) {
-                  const confirmedUrl = value.trim();
-                  setMcpUrl(confirmedUrl);
-                  setMcpUrlConfirmed(true);
-                  complete({ client, scope, mcpUrl: confirmedUrl, llmUrl, apiToken }, true);
-                }
-              }}
-            />
-          </>
-        )}
-        {step === "llm-url" && (
-          <>
-            <Text bold>URL LLM-шлюза Tropass</Text>
-            <TextInput
-              value={llmUrl}
-              onChange={setLlmUrl}
-              onSubmit={(value) => {
-                if (value.trim()) {
-                  const confirmedUrl = value.trim().replace(/\/+$/, "");
-                  setLlmUrl(confirmedUrl);
-                  setLlmUrlConfirmed(true);
-                  complete({ client, scope, mcpUrl, llmUrl: confirmedUrl, apiToken }, mcpUrlConfirmed, true);
-                }
+                complete({ client, scope: item.value, apiToken });
               }}
             />
           </>
@@ -171,17 +123,6 @@ function InstallerWizard({
       </Box>
     </Box>
   );
-
-  function resolveStep(values: {
-    scope: InstallScope | undefined;
-    mcpUrlConfirmed: boolean;
-    llmUrlConfirmed: boolean;
-  }): Step {
-    if (!values.scope) return "scope";
-    if (!values.mcpUrlConfirmed) return "mcp-url";
-    if (!values.llmUrlConfirmed) return "llm-url";
-    return "token";
-  }
 }
 
 function TokenInput({

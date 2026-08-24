@@ -1,8 +1,8 @@
 import type {InstallClient} from "./types.js";
 
-export const DEFAULT_MCP_URL = "https://апи.тропасс.рф";
+export const DEFAULT_MCP_URL = "https://апи.тропасс.рф/mcp";
 export const TROPASS_URL = "https://тропасс.рф/";
-export const LLM_GATEWAY_URL = "https://апи.ллм.тропасс.рф";
+export const LLM_GATEWAY_URL = "https://апи.ллм.тропасс.рф/v1";
 export const DEFAULT_LLM_MODEL = "GLM-5.2";
 export const LLM_MODELS = [
   [DEFAULT_LLM_MODEL, DEFAULT_LLM_MODEL],
