@@ -6,11 +6,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { installTropassMcp } from "../src/installer.js";
 
+// Без мока результат зависел бы от того, стоит ли uvx на машине, где идут тесты.
+vi.mock("../src/uvx.js", () => ({ findUvx: () => undefined, uvxExecutable: () => "uvx" }));
+
 const TEST_MCP_GATEWAY_URL = "https://апи.тропасс.рф";
 const TEST_MCP_URL = `${TEST_MCP_GATEWAY_URL}/mcp`;
 const TEST_LLM_GATEWAY_URL = "https://апи.ллм.тропасс.рф";
 const TEST_LLM_MODEL = "GLM-5.2";
 const TEST_API_TOKEN = "test-token";
+const TEST_UVX_COMMAND = "/usr/local/bin/uvx";
 const ORIGINAL_HOME = process.env.HOME;
 const ORIGINAL_USERPROFILE = process.env.USERPROFILE;
 const ORIGINAL_XDG_CONFIG_HOME = process.env.XDG_CONFIG_HOME;
@@ -64,6 +68,7 @@ describe("installTropassMcp", () => {
       scope: "project",
       mcpUrl: `${TEST_MCP_GATEWAY_URL}/`,
       apiToken: TEST_API_TOKEN,
+      uvxCommand: TEST_UVX_COMMAND,
     });
 
     expect(result.client).toBe("opencode");
@@ -124,6 +129,11 @@ describe("installTropassMcp", () => {
 
     expect(fs.readFileSync(toolPath, "utf8")).toContain(`GATEWAY_URL = "${TEST_MCP_GATEWAY_URL}"`);
     expect(fs.readFileSync(toolPath, "utf8")).toContain(`GATEWAY_API_TOKEN = "${TEST_API_TOKEN}"`);
+    const toolSource = fs.readFileSync(toolPath, "utf8");
+    expect(toolSource).not.toContain("path.join(import.meta.dir");
+    expect(toolSource).toContain("fileURLToPath(import.meta.url)");
+    expect(toolSource).not.toContain("{{");
+    expect(toolSource).toContain(`const UVX_COMMAND = "${TEST_UVX_COMMAND}";`);
     const toolScript = fs.readFileSync(toolScriptPath, "utf8");
     expect(toolScript).toContain("wait_for_model_task");
     expect(toolScript).not.toContain(TEST_MCP_GATEWAY_URL);
@@ -158,6 +168,7 @@ describe("installTropassMcp", () => {
       configPath,
       mcpUrl: TEST_MCP_URL,
       apiToken: TEST_API_TOKEN,
+      uvxCommand: TEST_UVX_COMMAND,
     });
 
     expect(result.configPath).toBe(configPath);
@@ -182,6 +193,52 @@ describe("installTropassMcp", () => {
     expect(readJson(path.join(homeDir, ".config", "opencode", "tui.json")).plugin).toEqual([
       "./tropass-usage.mjs",
     ]);
+  });
+
+  it("falls back to synchronous v1 model calls and drops stale tools when uvx is missing", () => {
+    const projectDir = createTempDir();
+    const configPath = path.join(projectDir, "opencode.json");
+    const toolPath = path.join(projectDir, ".opencode", "tools", "wait_for_model_task.ts");
+    const toolScriptPath = path.join(projectDir, ".opencode", "tools", "wait_for_model_task.py");
+    fs.mkdirSync(path.dirname(toolPath), { recursive: true });
+    fs.writeFileSync(toolPath, "// stale tool from a previous install\n");
+    fs.writeFileSync(toolScriptPath, "# stale script\n");
+
+    const result = installTropassMcp({
+      projectDir,
+      scope: "project",
+      mcpUrl: TEST_MCP_URL,
+      llmUrl: TEST_LLM_GATEWAY_URL,
+      apiToken: TEST_API_TOKEN,
+    });
+
+    expect(result.modelCallVersion).toBe("1");
+    expect(result.toolPaths).toEqual([]);
+    expect(result.removedToolPaths).toEqual([toolPath, toolScriptPath]);
+    expect(fs.existsSync(toolPath)).toBe(false);
+    expect(fs.existsSync(toolScriptPath)).toBe(false);
+    expect(readJson(configPath).mcp.tropass.headers["Tropass-Model-Call-Version"]).toBe("1");
+  });
+
+  it("bakes uvx paths containing $ and backslashes without corrupting the template", () => {
+    const projectDir = createTempDir();
+    const uvxCommand = "C:\\Users\\d$mikh\\.local\\bin\\uvx.exe";
+
+    installTropassMcp({
+      projectDir,
+      scope: "project",
+      mcpUrl: TEST_MCP_URL,
+      llmUrl: TEST_LLM_GATEWAY_URL,
+      apiToken: "sk-$&-token",
+      uvxCommand,
+    });
+
+    const toolSource = fs.readFileSync(
+      path.join(projectDir, ".opencode", "tools", "wait_for_model_task.ts"),
+      "utf8",
+    );
+    expect(toolSource).toContain(`const UVX_COMMAND = ${JSON.stringify(uvxCommand)};`);
+    expect(toolSource).toContain(`const GATEWAY_API_TOKEN = ${JSON.stringify("sk-$&-token")};`);
   });
 
   it.each(["codex", "claude"])("rejects removed client %s", (client) => {

@@ -1,5 +1,6 @@
 export type InstallClient = "opencode";
 export type InstallScope = "project" | "global";
+export type ModelCallVersion = "1" | "2";
 
 export type RawInstallOptions = {
   client?: string;
@@ -14,6 +15,7 @@ export type RawInstallOptions = {
   project?: string;
   projectDir?: string;
   scope?: string;
+  uvxCommand?: string;
   global?: boolean;
   local?: boolean;
   yes?: boolean;
@@ -27,6 +29,7 @@ export type InstallOptions = {
   apiToken?: string;
   projectDir: string;
   scope?: string;
+  uvxCommand?: string;
   yes: boolean;
 };
 
@@ -34,6 +37,7 @@ export type ValidatedInstallOptions = Omit<InstallOptions, "client" | "apiToken"
   client: InstallClient;
   apiToken: string;
   scope: InstallScope;
+  modelCallVersion: ModelCallVersion;
 };
 
 export type InstallResult = {
@@ -43,6 +47,9 @@ export type InstallResult = {
   skillPaths: string[];
   toolPaths: string[];
   pluginPaths: string[];
+  removedToolPaths: string[];
+  modelCallVersion: ModelCallVersion;
+  uvxCommand?: string;
 };
 
 export type JsonObject = Record<string, unknown>;

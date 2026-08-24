@@ -7,8 +7,8 @@ import {
   DEFAULT_TOKEN_HEADER,
   LLM_MODELS,
   MCP_MODEL_CALL_VERSION_HEADER,
-  MCP_MODEL_CALL_VERSION_VALUE,
 } from "../constants.js";
+import type {ModelCallVersion} from "../types.js";
 import type {HarnessInstaller} from "./types.js";
 import {
   buildBearerToken,
@@ -45,13 +45,13 @@ export const opencodeInstaller: HarnessInstaller = {
         "--header",
         `${DEFAULT_TOKEN_HEADER}=${buildBearerToken(options.apiToken)}`,
         "--header",
-        `${MCP_MODEL_CALL_VERSION_HEADER}=${MCP_MODEL_CALL_VERSION_VALUE}`,
+        `${MCP_MODEL_CALL_VERSION_HEADER}=${options.modelCallVersion}`,
       ]);
-      writeOpenCodeConfig(configPath, options.mcpUrl, options.apiToken);
+      writeOpenCodeConfig(configPath, options.mcpUrl, options.apiToken, options.modelCallVersion);
       return;
     }
 
-    writeOpenCodeConfig(configPath, options.mcpUrl, options.apiToken);
+    writeOpenCodeConfig(configPath, options.mcpUrl, options.apiToken, options.modelCallVersion);
   },
 
   installProvider(options, configPath) {
@@ -70,16 +70,18 @@ export const opencodeInstaller: HarnessInstaller = {
     });
   },
 
-  installTools(toolsPath, mcpUrl, apiToken) {
+  installTools(toolsPath, mcpUrl, apiToken, uvxCommand) {
     fs.mkdirSync(toolsPath, { recursive: true });
     const gatewayUrl = buildGatewayUrl(mcpUrl);
     const toolTemplate = fs.readFileSync(path.join(PACKAGED_TOOLS_DIRECTORY, TOOL_FILE_NAME), "utf8");
     const toolPath = path.join(toolsPath, TOOL_FILE_NAME);
     writeTextFile(
       toolPath,
-      toolTemplate
-        .replace("{{GATEWAY_URL}}", gatewayUrl)
-        .replace("{{GATEWAY_API_TOKEN}}", stripBearerToken(apiToken)),
+      fillTemplate(toolTemplate, {
+        GATEWAY_URL: gatewayUrl,
+        GATEWAY_API_TOKEN: stripBearerToken(apiToken),
+        UVX_COMMAND: uvxCommand,
+      }),
     );
     const scriptPath = path.join(toolsPath, TOOL_SCRIPT_NAME);
     writeTextFile(
@@ -87,6 +89,16 @@ export const opencodeInstaller: HarnessInstaller = {
       fs.readFileSync(path.join(PACKAGED_TOOLS_DIRECTORY, TOOL_SCRIPT_NAME), "utf8"),
     );
     return [toolPath, scriptPath];
+  },
+
+  removeTools(toolsPath) {
+    return [TOOL_FILE_NAME, TOOL_SCRIPT_NAME]
+      .map((name) => path.join(toolsPath, name))
+      .filter((filePath) => fs.existsSync(filePath))
+      .map((filePath) => {
+        fs.rmSync(filePath);
+        return filePath;
+      });
   },
 
   installPlugins(configDir, llmUrl, apiToken) {
@@ -97,9 +109,10 @@ export const opencodeInstaller: HarnessInstaller = {
     );
     writeTextFile(
       pluginPath,
-      template
-        .replace("{{USAGE_URL}}", Buffer.from(`${llmUrl}/api/rpc/fetch-token-usage/`).toString("base64"))
-        .replace("{{API_TOKEN}}", Buffer.from(stripBearerToken(apiToken)).toString("base64")),
+      fillTemplate(template, {
+        USAGE_URL: Buffer.from(`${llmUrl}/api/rpc/fetch-token-usage/`).toString("base64"),
+        API_TOKEN: Buffer.from(stripBearerToken(apiToken)).toString("base64"),
+      }),
     );
 
     const tuiConfigPath = path.join(configDir, "tui.json");
@@ -118,6 +131,7 @@ function writeOpenCodeConfig(
   configPath: string,
   mcpUrl: string,
   apiToken: string,
+  modelCallVersion: ModelCallVersion,
 ): void {
   const payload = readJsonFile(configPath);
   payload.mcp = {
@@ -129,7 +143,7 @@ function writeOpenCodeConfig(
       url: mcpUrl,
       headers: {
         [DEFAULT_TOKEN_HEADER]: buildBearerToken(apiToken),
-        [MCP_MODEL_CALL_VERSION_HEADER]: MCP_MODEL_CALL_VERSION_VALUE,
+        [MCP_MODEL_CALL_VERSION_HEADER]: modelCallVersion,
       },
     },
   };
@@ -170,6 +184,17 @@ function writeOpenCodeProvider(
     },
   };
   writeJsonFile(configPath, payload);
+}
+
+function fillTemplate(template: string, values: Record<string, string>): string {
+  return Object.entries(values).reduce(
+    (filled, [name, value]) => filled.replaceAll(`{{${name}}}`, () => escapeForSourceString(value)),
+    template,
+  );
+}
+
+function escapeForSourceString(value: string): string {
+  return JSON.stringify(value).slice(1, -1);
 }
 
 function buildGatewayUrl(mcpUrl: string): string {

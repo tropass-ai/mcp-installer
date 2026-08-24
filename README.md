@@ -4,9 +4,14 @@
 
 ## Требования
 
-- Node.js 22 или новее;
-- OpenCode 1.17.16 или новее;
-- API-токен Tropass.
+- [Node.js](https://nodejs.org/en/download) 22 или новее;
+- [OpenCode](https://opencode.ai/docs/#install) 1.17.16 или новее;
+- [uv](https://docs.astral.sh/uv/getting-started/installation/) (команда `uvx`) — опционален, нужен инструменту `wait_for_model_task`, который ждёт завершения задач моделей;
+- [API-токен Tropass](https://ядро.тропасс.рф/api-keys).
+
+Установщик сам `uv` не ставит. Если `uvx` не найден, установка не прерывается: MCP настраивается на синхронный режим вызова моделей `v1` (заголовок `Tropass-Model-Call-Version: 1`). В нём модельный инструмент сам дожидается результата, `wait_for_model_task` не нужен и не устанавливается, а файлы инструмента от прошлой установки удаляются.
+
+Чтобы включить асинхронный режим `v2`, [поставьте uv](https://docs.astral.sh/uv/getting-started/installation/), перезапустите терминал, чтобы `uvx` попал в `PATH`, и повторите установку.
 
 ## Быстрый старт
 

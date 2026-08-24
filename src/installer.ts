@@ -1,9 +1,16 @@
 import path from "node:path";
 import process from "node:process";
 
-import { DEFAULT_MCP_URL, LLM_GATEWAY_URL, SUPPORTED_INSTALL_CLIENTS } from "./constants.js";
+import {
+  ASYNC_MODEL_CALL_VERSION,
+  DEFAULT_MCP_URL,
+  LLM_GATEWAY_URL,
+  SUPPORTED_INSTALL_CLIENTS,
+  SYNC_MODEL_CALL_VERSION
+} from "./constants.js";
 import { runInteractiveInstaller, writeInstallResult } from "./interactive-installer.js";
 import { opencodeInstaller } from "./installers/opencode.js";
+import { findUvx } from "./uvx.js";
 import {
   expandHome,
   resolveOpenCodeConfigPath
@@ -32,12 +39,10 @@ export async function runInstall(rawOptions: RawInstallOptions = {}): Promise<vo
     scope
   });
 
-  const result = installTropassMcp({
+  writeInstallResult(installTropassMcp({
     ...options,
     ...interactiveOptions
-  });
-
-  writeInstallResult(result);
+  }));
 }
 
 export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult {
@@ -48,11 +53,18 @@ export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult 
   opencodeInstaller.installProvider(options, configPath);
 
   const skillPaths = opencodeInstaller.installSkills(resolveSkillsPath(options));
-  const toolPaths = opencodeInstaller.installTools(
-    resolveToolsPath(options),
-    normalizeMcpUrl(options.mcpUrl),
-    options.apiToken,
-  );
+  const uvxCommand = options.uvxCommand;
+  const toolPaths = uvxCommand
+    ? opencodeInstaller.installTools(
+      resolveToolsPath(options),
+      normalizeMcpUrl(options.mcpUrl),
+      options.apiToken,
+      uvxCommand,
+    )
+    : [];
+  const removedToolPaths = uvxCommand
+    ? []
+    : opencodeInstaller.removeTools(resolveToolsPath(options));
   const pluginPaths = opencodeInstaller.installPlugins(
     path.dirname(resolveToolsPath(options)),
     options.llmUrl,
@@ -65,7 +77,10 @@ export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult 
     configPath,
     skillPaths,
     toolPaths,
-    pluginPaths
+    removedToolPaths,
+    pluginPaths,
+    modelCallVersion: options.modelCallVersion,
+    ...(uvxCommand && { uvxCommand })
   };
 }
 
@@ -94,6 +109,10 @@ function normalizeInstallOptions(options: RawInstallOptions): InstallOptions {
   if (scope !== undefined) {
     normalizedOptions.scope = scope;
   }
+  const uvxCommand = options.uvxCommand ?? findUvx();
+  if (uvxCommand !== undefined) {
+    normalizedOptions.uvxCommand = uvxCommand;
+  }
 
   return normalizedOptions;
 }
@@ -114,7 +133,8 @@ function validateInstallOptions(options: InstallOptions): ValidatedInstallOption
     ...options,
     client,
     apiToken: options.apiToken,
-    scope
+    scope,
+    modelCallVersion: options.uvxCommand ? ASYNC_MODEL_CALL_VERSION : SYNC_MODEL_CALL_VERSION
   };
 }
 
