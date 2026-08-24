@@ -6,5 +6,5 @@ export type HarnessInstaller = {
   installSkills(skillsPath: string): string[];
   installTools(toolsPath: string, mcpUrl: string, apiToken: string, uvxCommand: string): string[];
   removeTools(toolsPath: string): string[];
-  installPlugins(configDir: string, llmUrl: string, apiToken: string): string[];
+  installPlugins(configDir: string, configPath: string, options: ValidatedInstallOptions): string[];
 };

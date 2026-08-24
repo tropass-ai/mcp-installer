@@ -45,10 +45,6 @@ describe("main", () => {
       "opencode",
       "--config",
       "/tmp/mcp.json",
-      "--url",
-      "https://example.test/mcp",
-      "--llm-url",
-      "https://llm.example.test",
       "--token",
       "token-123",
       "--project",
@@ -64,8 +60,6 @@ describe("main", () => {
     expect(runInstall).toHaveBeenCalledWith({
       client: "opencode",
       config: "/tmp/mcp.json",
-      url: "https://example.test/mcp",
-      llmUrl: "https://llm.example.test",
       token: "token-123",
       project: "/workspace/project",
       scope: "global",
@@ -128,7 +122,8 @@ describe("main", () => {
     expect(stdout).toContain("Настраивает удалённый MCP-сервер Tropass и инструкции агента.");
     expect(stdout).toContain("Tropass: https://тропасс.рф/");
     expect(stdout).toContain("MCP-клиент: opencode");
-    expect(stdout).toContain("URL LLM-шлюза Tropass");
+    expect(stdout).not.toContain("--url");
+    expect(stdout).not.toContain("--llm-url");
     expect(stdout).toContain("область установки: global или project");
     expect(stdout).toContain("показать справку");
     expect(runInstall).not.toHaveBeenCalled();

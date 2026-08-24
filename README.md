@@ -1,111 +1,61 @@
-# Tropass MCP Installer
+# Tropass для OpenCode
 
-Подключает [OpenCode](https://opencode.ai/) к [Tropass](https://тропасс.рф/): добавляет MCP-инструменты с ML-моделями, LLM-провайдер `tropass` и инструкции для агента.
-
-## Требования
-
-- [Node.js](https://nodejs.org/en/download) 22 или новее;
-- [OpenCode](https://opencode.ai/docs/#install) 1.17.16 или новее;
-- [uv](https://docs.astral.sh/uv/getting-started/installation/) (команда `uvx`) — опционален, нужен инструменту `wait_for_model_task`, который ждёт завершения задач моделей;
-- [API-токен Tropass](https://ядро.тропасс.рф/api-keys).
-
-Установщик сам `uv` не ставит. Если `uvx` не найден, установка не прерывается: MCP настраивается на синхронный режим вызова моделей `v1` (заголовок `Tropass-Model-Call-Version: 1`). В нём модельный инструмент сам дожидается результата, `wait_for_model_task` не нужен и не устанавливается, а файлы инструмента от прошлой установки удаляются.
-
-Чтобы включить асинхронный режим `v2`, [поставьте uv](https://docs.astral.sh/uv/getting-started/installation/), перезапустите терминал, чтобы `uvx` попал в `PATH`, и повторите установку.
+[`@tropass/mcp-installer`](https://www.npmjs.com/package/@tropass/mcp-installer) подключает [OpenCode](https://opencode.ai/) к [Tropass](https://тропасс.рф/) за одну команду. После установки агент может вызывать ML-модели через MCP, использовать LLM Tropass и работать со структурированными результатами моделей.
 
 ## Быстрый старт
 
-Запустите команду в каталоге проекта:
+Понадобятся:
+
+- [Node.js](https://nodejs.org/en/download) 22 или новее;
+- [OpenCode](https://opencode.ai/docs/#install) 1.17.16 или новее;
+- [API-токен Tropass](https://ядро.тропасс.рф/api-keys).
+
+Запустите установщик в терминале:
 
 ```bash
 npx -y @tropass/mcp-installer@latest
 ```
 
-Установщик попросит выбрать область установки и ввести API-токен. По умолчанию конфигурация создаётся глобально для текущего пользователя. После установки перезапустите OpenCode.
+Выберите область установки, введите API-токен и перезапустите OpenCode. По умолчанию установщик предлагает глобальную настройку для текущего пользователя.
 
-## Что будет настроено
+## Возможности
 
-В `opencode.json` будут добавлены MCP-сервер и LLM-провайдер `tropass` с моделями `GLM-5.2`, `tropass-large-llm`, `tropass-medium-llm` и `tropass-small-llm`. Нативный TUI-плагин добавит команду `/usage` для проверки недельного остатка токенов без обращения к модели. Моделью по умолчанию останется `tropass/GLM-5.2`. Остальные разделы конфигурации сохранятся.
+- **ML-модели через MCP.** Агент получает доступ к моделям Tropass, подбирает подходящий инструмент, проверяет его аргументы и дожидается результата.
+- **LLM-провайдер Tropass.** Доступны `GLM-5.2`, `tropass-large-llm`, `tropass-medium-llm` и `tropass-small-llm`. Моделью по умолчанию становится `GLM-5.2`; она принимает текст и изображения.
+- **Инструкции для агента.** Установщик добавляет skills для вызова моделей и обработки текстов, графиков, медиа и вложений в их ответах.
+- **Статистика токенов.** Команда `/usage` показывает недельный расход, остаток и время обновления лимита без запроса к LLM.
+- **Обновления.** При запуске OpenCode плагин предлагает установить новую версию или напомнить о ней через 24 часа.
+- **Бережная настройка.** Повторная установка обновляет интеграцию Tropass, сохраняя остальные разделы конфигурации OpenCode.
 
-При проектной установке появятся файлы:
+Адреса MCP- и LLM-шлюзов заполняются автоматически. При необходимости их можно изменить вручную в конфигурации OpenCode.
 
-```text
-opencode.json
-.opencode/skills/tropass-gateway/SKILL.md
-.opencode/skills/agent-response-display/SKILL.md
-.opencode/tropass-usage.mjs
-.opencode/tui.json
-```
+## Установка
 
-## Область установки
-
-| Режим | Конфигурация | Skills |
-| --- | --- | --- |
-| `global` | `~/.config/opencode/opencode.jsonc` | `~/.config/opencode/skills` |
-| `project` | `<project>/opencode.json` | `<project>/.opencode/skills` |
-
-На всех платформах, включая Windows, глобальный путь — `~/.config/opencode` (то есть `%USERPROFILE%\.config\opencode`).
-
-Режим можно выбрать интерактивно или флагом `--global` / `--local`:
+Глобальная установка делает Tropass доступным во всех проектах текущего пользователя:
 
 ```bash
 npx -y @tropass/mcp-installer@latest opencode --global
+```
+
+Проектная установка настраивает только текущий рабочий каталог:
+
+```bash
 npx -y @tropass/mcp-installer@latest opencode --local
 ```
 
-## Установка без вопросов
+> При проектной установке `opencode.json` и `.opencode/tropass.mjs` содержат API-токен. Не добавляйте эти файлы в публичный репозиторий.
 
-Для CI и скриптов:
+### Асинхронные задачи моделей
 
-```bash
-npx -y @tropass/mcp-installer@latest opencode \
-  --scope global \
-  --token "your-api-token" \
-  --yes
-```
+[uv](https://docs.astral.sh/uv/getting-started/installation/) опционален. Если команда `uvx` доступна, длительные задачи моделей запускаются асинхронно, а агент ожидает их завершения отдельным инструментом. Без `uvx` установка продолжится, а модели будут работать в синхронном режиме.
 
-Токен и адреса шлюзов можно передать через переменные окружения:
+Чтобы переключиться на асинхронный режим, установите `uv`, убедитесь, что `uvx` доступен в новом терминале, и повторите установку.
+
+Полный список параметров:
 
 ```bash
-export TROPASS_API_TOKEN="your-api-token"
-export TROPASS_MCP_URL="https://апи.тропасс.рф"
-export TROPASS_LLM_URL="https://апи.ллм.тропасс.рф"
-npx -y @tropass/mcp-installer@latest opencode --scope global --yes
+npx -y @tropass/mcp-installer@latest --help
 ```
-
-## Параметры CLI
-
-```text
-Использование: tropass-mcp-install [options] [client]
-
-Аргументы:
-  client             MCP-клиент (сейчас поддерживается opencode)
-
-Параметры:
-  --config <path>    путь к файлу конфигурации
-  --url <url>        базовый URL шлюза Tropass MCP
-  --llm-url <url>    URL шлюза Tropass LLM
-  --token <token>    API-токен Tropass
-  --scope <scope>    область установки: global или project
-  --global           глобальная установка
-  --local            установка в текущий проект
-  --project <dir>    каталог проекта
-  -y, --yes           принять значения по умолчанию
-  -h, --help          показать справку
-```
-
-## Безопасность
-
-API-токен сохраняется в конфигурации OpenCode и файле TUI-плагина. Не добавляйте проектные `opencode.json` и `.opencode/tropass-usage.mjs` в публичный репозиторий.
-
-## Разработка
-
-```bash
-npm ci
-npm run check
-```
-
-`npm run check` запускает проверку типов, линтер, тесты и сборку.
 
 ## Лицензия
 

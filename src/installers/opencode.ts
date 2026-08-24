@@ -31,7 +31,9 @@ const PACKAGED_TOOLS_DIRECTORY = path.resolve(
 const SKILL_NAMES = ["tropass-gateway", "agent-response-display"];
 const TOOL_FILE_NAME = "wait_for_model_task.ts";
 const TOOL_SCRIPT_NAME = "wait_for_model_task.py";
-const USAGE_PLUGIN_FILE_NAME = "tropass-usage.mjs";
+const PLUGIN_FILE_NAME = "tropass.mjs";
+const LEGACY_PLUGIN_FILE_NAME = "tropass-usage.mjs";
+const INSTALLER_VERSION = readInstallerVersion();
 
 export const opencodeInstaller: HarnessInstaller = {
   installConfig(options, configPath) {
@@ -101,19 +103,24 @@ export const opencodeInstaller: HarnessInstaller = {
       });
   },
 
-  installPlugins(configDir, llmUrl, apiToken) {
-    const pluginPath = path.join(configDir, USAGE_PLUGIN_FILE_NAME);
+  installPlugins(configDir, configPath, options) {
+    const pluginPath = path.join(configDir, PLUGIN_FILE_NAME);
     const template = fs.readFileSync(
-      path.join(PACKAGED_TOOLS_DIRECTORY, USAGE_PLUGIN_FILE_NAME),
+      path.join(PACKAGED_TOOLS_DIRECTORY, PLUGIN_FILE_NAME),
       "utf8",
     );
     writeTextFile(
       pluginPath,
       fillTemplate(template, {
-        USAGE_URL: Buffer.from(`${llmUrl}/api/rpc/fetch-token-usage/`).toString("base64"),
-        API_TOKEN: Buffer.from(stripBearerToken(apiToken)).toString("base64"),
+        USAGE_URL: Buffer.from(`${options.llmUrl.replace(/\/v1$/, "")}/api/rpc/fetch-token-usage/`).toString("base64"),
+        API_TOKEN: Buffer.from(stripBearerToken(options.apiToken)).toString("base64"),
+        CONFIG_PATH: Buffer.from(configPath).toString("base64"),
+        PROJECT_DIR: Buffer.from(options.scope === "project" ? path.dirname(configDir) : "").toString("base64"),
+        INSTALLER_VERSION,
+        INSTALL_SCOPE: options.scope,
       }),
     );
+    fs.rmSync(path.join(configDir, LEGACY_PLUGIN_FILE_NAME), { force: true });
 
     const tuiConfigPath = path.join(configDir, "tui.json");
     const tuiConfig = readJsonFile(tuiConfigPath);
@@ -121,7 +128,8 @@ export const opencodeInstaller: HarnessInstaller = {
     if (plugins !== undefined && !Array.isArray(plugins)) {
       throw new Error(`Поле конфигурации 'plugin' в ${tuiConfigPath} должно быть массивом.`);
     }
-    tuiConfig.plugin = [...(plugins ?? []).filter((plugin) => plugin !== `./${USAGE_PLUGIN_FILE_NAME}`), `./${USAGE_PLUGIN_FILE_NAME}`];
+    const tropassPlugins = new Set([`./${PLUGIN_FILE_NAME}`, `./${LEGACY_PLUGIN_FILE_NAME}`]);
+    tuiConfig.plugin = [...(plugins ?? []).filter((plugin) => !tropassPlugins.has(String(plugin))), `./${PLUGIN_FILE_NAME}`];
     writeJsonFile(tuiConfigPath, tuiConfig);
     return [pluginPath];
   },
@@ -167,7 +175,7 @@ function writeOpenCodeProvider(
       npm: "@ai-sdk/openai-compatible",
       name: "Tropass",
       options: {
-        baseURL: `${llmUrl}/v1`,
+        baseURL: llmUrl,
         apiKey: stripBearerToken(apiToken),
       },
       models: Object.fromEntries(
@@ -199,4 +207,19 @@ function escapeForSourceString(value: string): string {
 
 function buildGatewayUrl(mcpUrl: string): string {
   return mcpUrl.replace(/\/mcp$/, "").replace(/\/+$/, "");
+}
+
+function readInstallerVersion(): string {
+  const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
+  const packagePaths = ["../../package.json", "../../../package.json"]
+    .map((relativePath) => path.resolve(moduleDirectory, relativePath));
+  const packagePath = packagePaths.find((candidate) => fs.existsSync(candidate));
+  if (!packagePath) {
+    throw new Error("Не найден package.json установщика Tropass.");
+  }
+  const version = readJsonFile(packagePath).version;
+  if (typeof version !== "string") {
+    throw new Error(`В ${packagePath} не указана версия установщика Tropass.`);
+  }
+  return version;
 }
