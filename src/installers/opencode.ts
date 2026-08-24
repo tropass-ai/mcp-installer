@@ -3,9 +3,7 @@ import path from "node:path";
 import {fileURLToPath} from "node:url";
 
 import {
-  DEFAULT_LLM_MODEL,
   DEFAULT_TOKEN_HEADER,
-  LLM_MODELS,
   MCP_MODEL_CALL_VERSION_HEADER,
 } from "../constants.js";
 import type {ModelCallVersion} from "../types.js";
@@ -32,6 +30,7 @@ const SKILL_NAMES = ["tropass-gateway", "agent-response-display"];
 const TOOL_FILE_NAME = "wait_for_model_task.ts";
 const TOOL_SCRIPT_NAME = "wait_for_model_task.py";
 const PLUGIN_FILE_NAME = "tropass.mjs";
+const PROVIDER_PLUGIN_FILE_NAME = "tropass-provider.js";
 const LEGACY_PLUGIN_FILE_NAME = "tropass-usage.mjs";
 const INSTALLER_VERSION = readInstallerVersion();
 
@@ -120,6 +119,11 @@ export const opencodeInstaller: HarnessInstaller = {
         INSTALL_SCOPE: options.scope,
       }),
     );
+    const providerPluginPath = path.join(configDir, "plugins", PROVIDER_PLUGIN_FILE_NAME);
+    writeTextFile(
+      providerPluginPath,
+      fs.readFileSync(path.join(PACKAGED_TOOLS_DIRECTORY, PROVIDER_PLUGIN_FILE_NAME), "utf8"),
+    );
     fs.rmSync(path.join(configDir, LEGACY_PLUGIN_FILE_NAME), { force: true });
 
     const tuiConfigPath = path.join(configDir, "tui.json");
@@ -131,7 +135,7 @@ export const opencodeInstaller: HarnessInstaller = {
     const tropassPlugins = new Set([`./${PLUGIN_FILE_NAME}`, `./${LEGACY_PLUGIN_FILE_NAME}`]);
     tuiConfig.plugin = [...(plugins ?? []).filter((plugin) => !tropassPlugins.has(String(plugin))), `./${PLUGIN_FILE_NAME}`];
     writeJsonFile(tuiConfigPath, tuiConfig);
-    return [pluginPath];
+    return [pluginPath, providerPluginPath];
   },
 };
 
@@ -164,7 +168,9 @@ function writeOpenCodeProvider(
   llmUrl: string,
 ): void {
   const payload = readJsonFile(configPath);
-  payload.model = `tropass/${DEFAULT_LLM_MODEL}`;
+  if (typeof payload.model === "string" && payload.model.startsWith("tropass/")) {
+    delete payload.model;
+  }
   const commands = readObjectProperty(payload, "command");
   delete commands.usage;
   if (Object.keys(commands).length) payload.command = commands;
@@ -178,17 +184,6 @@ function writeOpenCodeProvider(
         baseURL: llmUrl,
         apiKey: stripBearerToken(apiToken),
       },
-      models: Object.fromEntries(
-        LLM_MODELS.map(([model, name]) => [
-          model,
-          {
-            name,
-            ...(model === DEFAULT_LLM_MODEL && {
-              modalities: {input: ["text", "image"], output: ["text"]},
-            }),
-          },
-        ]),
-      ),
     },
   };
   writeJsonFile(configPath, payload);
