@@ -25,6 +25,7 @@
     "ink": "^7.1.1",
     "ink-link": "^4.1.0",
     "ink-select-input": "^6.2.0",
+    "ink-text-input": "^6.0.0",
     "react": "^19.2.7"
   },
   "devDependencies": {
