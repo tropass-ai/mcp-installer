@@ -31,6 +31,8 @@ function createInstallCommand(commandName: string): Command {
     .description(`Настраивает удалённый MCP-сервер Tropass и инструкции агента.\nTropass: ${TROPASS_URL}`)
     .argument("[client]", "MCP-клиент: opencode")
     .option("--config <path>", "путь к файлу конфигурации MCP")
+    .option("--url <url>", "базовый URL шлюза моделей Tropass")
+    .option("--llm-url <url>", "URL LLM-шлюза Tropass")
     .option("--token <token>", "API-токен Tropass")
     .option("--scope <scope>", "область установки: global или project")
     .option("--global", "установить для текущего пользователя")

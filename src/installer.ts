@@ -49,7 +49,7 @@ export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult 
   const options = validateInstallOptions(normalizeInstallOptions(rawOptions));
 
   const configPath = resolveConfigPath(options);
-  opencodeInstaller.installConfig(options, configPath);
+  opencodeInstaller.installConfig({ ...options, mcpUrl: normalizeMcpUrl(options.mcpUrl) }, configPath);
   opencodeInstaller.installProvider(options, configPath);
 
   const skillPaths = opencodeInstaller.installSkills(resolveSkillsPath(options));
@@ -57,7 +57,7 @@ export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult 
   const toolPaths = uvxCommand
     ? opencodeInstaller.installTools(
       resolveToolsPath(options),
-      options.mcpUrl,
+      normalizeMcpUrl(options.mcpUrl),
       options.apiToken,
       uvxCommand,
     )
@@ -89,6 +89,10 @@ function normalizeInstallOptions(options: RawInstallOptions): InstallOptions {
   const apiToken = options.token ?? options.apiToken ?? process.env.TROPASS_API_TOKEN;
   const scope = normalizeScopeOption(options);
   const normalizedOptions: InstallOptions = {
+    mcpUrl: options.url ?? options.mcpUrl ?? process.env.TROPASS_MCP_URL ?? DEFAULT_MCP_URL,
+    llmUrl: normalizeLlmUrl(
+      options.llmUrl ?? options.llmGatewayUrl ?? process.env.TROPASS_LLM_URL ?? LLM_GATEWAY_URL
+    ),
     projectDir: options.project ?? options.projectDir ?? process.cwd(),
     yes: Boolean(options.yes)
   };
@@ -118,12 +122,16 @@ function validateInstallOptions(options: InstallOptions): ValidatedInstallOption
   if (!options.apiToken) {
     throw new Error("Необходимо указать API-токен Tropass.");
   }
+  if (!options.mcpUrl) {
+    throw new Error("Необходимо указать URL Tropass MCP.");
+  }
+  if (!options.llmUrl) {
+    throw new Error("Необходимо указать URL Tropass LLM.");
+  }
   const scope = validateInstallScope(options.scope ?? resolveDefaultScope());
   return {
     ...options,
     client,
-    mcpUrl: DEFAULT_MCP_URL,
-    llmUrl: LLM_GATEWAY_URL,
     apiToken: options.apiToken,
     scope,
     modelCallVersion: options.uvxCommand ? ASYNC_MODEL_CALL_VERSION : SYNC_MODEL_CALL_VERSION
@@ -166,6 +174,20 @@ function validateInstallScope(value: string): InstallScope {
 
 function isInstallClient(value: unknown): value is InstallClient {
   return typeof value === "string" && SUPPORTED_INSTALL_CLIENTS.has(value as InstallClient);
+}
+
+function stripTrailingSlashes(value: string): string {
+  return value.replace(/\/+$/, "");
+}
+
+function normalizeMcpUrl(value: string): string {
+  const url = stripTrailingSlashes(value);
+  return !url || url.endsWith("/mcp") ? url : `${url}/mcp`;
+}
+
+function normalizeLlmUrl(value: string): string {
+  const url = stripTrailingSlashes(value);
+  return !url || url.endsWith("/v1") ? url : `${url}/v1`;
 }
 
 function resolveConfigPath(options: ValidatedInstallOptions): string {

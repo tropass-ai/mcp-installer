@@ -122,8 +122,8 @@ describe("main", () => {
     expect(stdout).toContain("Настраивает удалённый MCP-сервер Tropass и инструкции агента.");
     expect(stdout).toContain("Tropass: https://тропасс.рф/");
     expect(stdout).toContain("MCP-клиент: opencode");
-    expect(stdout).not.toContain("--url");
-    expect(stdout).not.toContain("--llm-url");
+    expect(stdout).toContain("--url");
+    expect(stdout).toContain("--llm-url");
     expect(stdout).toContain("область установки: global или project");
     expect(stdout).toContain("показать справку");
     expect(runInstall).not.toHaveBeenCalled();
