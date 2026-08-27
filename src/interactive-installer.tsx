@@ -110,7 +110,7 @@ function InstallerWizard({
         <Link url={TROPASS_URL}>
           <Text bold color="cyan" underline>Tropass</Text>
         </Link>
-        <Text bold color="cyan"> Установщик MCP</Text>
+        <Text bold color="cyan"> Connect</Text>
       </Box>
       <Box marginTop={1} flexDirection="column">
         {step === "scope" && (

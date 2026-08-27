@@ -9,7 +9,7 @@ import type { RawInstallOptions } from "./types.js";
 
 export async function main(): Promise<void> {
   const args = process.argv.slice(2);
-  await runInstallCommand(args[0] === "install" ? args.slice(1) : args, "tropass-mcp-install");
+  await runInstallCommand(args[0] === "install" ? args.slice(1) : args, "tropass-connect");
 }
 
 async function runInstallCommand(args: string[], commandName: string): Promise<void> {
@@ -28,8 +28,8 @@ async function runInstallCommand(args: string[], commandName: string): Promise<v
 function createInstallCommand(commandName: string): Command {
   return new Command()
     .name(commandName)
-    .description(`Настраивает удалённый MCP-сервер Tropass и инструкции агента.\nTropass: ${TROPASS_URL}`)
-    .argument("[client]", "MCP-клиент: opencode")
+    .description(`Подключает агентскую среду к Tropass.\nTropass: ${TROPASS_URL}`)
+    .argument("[client]", "агентская среда: opencode")
     .option("--config <path>", "путь к файлу конфигурации MCP")
     .option("--url <url>", "базовый URL шлюза моделей Tropass")
     .option("--llm-url <url>", "URL LLM-шлюза Tropass")

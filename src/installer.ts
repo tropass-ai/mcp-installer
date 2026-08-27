@@ -39,13 +39,13 @@ export async function runInstall(rawOptions: RawInstallOptions = {}): Promise<vo
     scope
   });
 
-  writeInstallResult(installTropassMcp({
+  writeInstallResult(installTropass({
     ...options,
     ...interactiveOptions
   }));
 }
 
-export function installTropassMcp(rawOptions: RawInstallOptions): InstallResult {
+export function installTropass(rawOptions: RawInstallOptions): InstallResult {
   const options = validateInstallOptions(normalizeInstallOptions(rawOptions));
 
   const configPath = resolveConfigPath(options);

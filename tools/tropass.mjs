@@ -8,8 +8,8 @@ const configPath = decode("{{CONFIG_PATH}}");
 const projectDir = decode("{{PROJECT_DIR}}");
 const currentVersion = "{{INSTALLER_VERSION}}";
 const installScope = "{{INSTALL_SCOPE}}";
-const installerPackage = "@tropass/mcp-installer@latest";
-const registryUrl = "https://registry.npmjs.org/@tropass%2Fmcp-installer/latest";
+const installerPackage = "@tropass/connect@latest";
+const registryUrl = "https://registry.npmjs.org/@tropass%2Fconnect/latest";
 const remindAfterKey = "tropass.update.remindAfter";
 const updateCheckKey = Symbol.for("tropass.update.checkStarted");
 

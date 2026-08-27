@@ -17,7 +17,7 @@ describe("main", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
-    process.argv = ["node", "/usr/local/bin/tropass-mcp-install"];
+    process.argv = ["node", "/usr/local/bin/tropass-connect"];
     stdout = "";
     vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => {
       stdout += chunk.toString();
@@ -41,7 +41,7 @@ describe("main", () => {
   it("routes options to installer", async () => {
     process.argv = [
       "node",
-      "/usr/local/bin/tropass-mcp-install",
+      "/usr/local/bin/tropass-connect",
       "opencode",
       "--config",
       "/tmp/mcp.json",
@@ -70,7 +70,7 @@ describe("main", () => {
   it("routes global and local aliases to installer", async () => {
     process.argv = [
       "node",
-      "/usr/local/bin/tropass-mcp-install",
+      "/usr/local/bin/tropass-connect",
       "opencode",
       "--token",
       "token-123",
@@ -92,7 +92,7 @@ describe("main", () => {
   it("accepts install subcommand as a compatibility alias", async () => {
     process.argv = [
       "node",
-      "/usr/local/bin/tropass-mcp-install",
+      "/usr/local/bin/tropass-connect",
       "install",
       "opencode",
       "--token",
@@ -111,17 +111,17 @@ describe("main", () => {
   });
 
   it("prints installer help", async () => {
-    process.argv = ["node", "/usr/local/bin/tropass-mcp-install", "--help"];
+    process.argv = ["node", "/usr/local/bin/tropass-connect", "--help"];
     const { main } = await import("../src/cli.js");
 
     await main();
 
-    expect(stdout).toContain("Использование: tropass-mcp-install [options] [client]");
+    expect(stdout).toContain("Использование: tropass-connect [options] [client]");
     expect(stdout).toContain("Аргументы:");
     expect(stdout).toContain("Параметры:");
-    expect(stdout).toContain("Настраивает удалённый MCP-сервер Tropass и инструкции агента.");
+    expect(stdout).toContain("Подключает агентскую среду к Tropass.");
     expect(stdout).toContain("Tropass: https://тропасс.рф/");
-    expect(stdout).toContain("MCP-клиент: opencode");
+    expect(stdout).toContain("агентская среда: opencode");
     expect(stdout).toContain("--url");
     expect(stdout).toContain("--llm-url");
     expect(stdout).toContain("область установки: global или project");

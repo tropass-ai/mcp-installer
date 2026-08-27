@@ -1,6 +1,6 @@
-# Tropass для OpenCode
+# Tropass Connect
 
-[`@tropass/mcp-installer`](https://www.npmjs.com/package/@tropass/mcp-installer) подключает [OpenCode](https://opencode.ai/) к [Tropass](https://тропасс.рф/) за одну команду. После установки агент может вызывать ML-модели через MCP, использовать LLM Tropass и работать со структурированными результатами моделей.
+[`@tropass/connect`](https://www.npmjs.com/package/@tropass/connect) подключает агентскую среду [OpenCode](https://opencode.ai/) к платформе [Tropass](https://тропасс.рф/) за одну команду. После установки агент может вызывать ML-модели через MCP, использовать LLM Tropass и работать со структурированными результатами моделей.
 
 ## Быстрый старт
 
@@ -13,7 +13,7 @@
 Запустите установщик в терминале:
 
 ```bash
-npx -y @tropass/mcp-installer@latest
+npx -y @tropass/connect@latest
 ```
 
 Выберите область установки, введите API-токен и перезапустите OpenCode. По умолчанию установщик предлагает глобальную настройку для текущего пользователя.
@@ -34,13 +34,13 @@ npx -y @tropass/mcp-installer@latest
 Глобальная установка делает Tropass доступным во всех проектах текущего пользователя:
 
 ```bash
-npx -y @tropass/mcp-installer@latest opencode --global
+npx -y @tropass/connect@latest opencode --global
 ```
 
 Проектная установка настраивает только текущий рабочий каталог:
 
 ```bash
-npx -y @tropass/mcp-installer@latest opencode --local
+npx -y @tropass/connect@latest opencode --local
 ```
 
 > При проектной установке `opencode.json` и `.opencode/tropass.mjs` содержат API-токен. Не добавляйте эти файлы в публичный репозиторий.
@@ -54,7 +54,7 @@ npx -y @tropass/mcp-installer@latest opencode --local
 Полный список параметров:
 
 ```bash
-npx -y @tropass/mcp-installer@latest --help
+npx -y @tropass/connect@latest --help
 ```
 
 ## Лицензия

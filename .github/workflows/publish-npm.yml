@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   publish:
-    name: Publish @tropass/mcp-installer
+    name: Publish @tropass/connect
     runs-on: ubuntu-latest
 
     steps:

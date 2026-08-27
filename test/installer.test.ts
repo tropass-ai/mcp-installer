@@ -4,7 +4,7 @@ import path from "node:path";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { installTropassMcp } from "../src/installer.js";
+import { installTropass } from "../src/installer.js";
 
 // Без мока результат зависел бы от того, стоит ли uvx на машине, где идут тесты.
 vi.mock("../src/uvx.js", () => ({ findUvx: () => undefined, uvxExecutable: () => "uvx" }));
@@ -35,7 +35,7 @@ afterEach(() => {
   tempDirs = [];
 });
 
-describe("installTropassMcp", () => {
+describe("installTropass", () => {
   it("writes OpenCode project config and copies native skills", () => {
     const projectDir = createTempDir();
     const configPath = path.join(projectDir, "opencode.json");
@@ -68,7 +68,7 @@ describe("installTropassMcp", () => {
     fs.writeFileSync(legacyPluginPath, "// plugin from an older installer\n");
     fs.writeFileSync(agentsPath, "# Existing agent notes\n");
 
-    const result = installTropassMcp({
+    const result = installTropass({
       projectDir,
       scope: "project",
       apiToken: TEST_API_TOKEN,
@@ -163,7 +163,7 @@ describe("installTropassMcp", () => {
     const globalTropassPluginPath = path.join(homeDir, ".config", "opencode", "tropass.mjs");
     const globalProviderPluginPath = path.join(homeDir, ".config", "opencode", "plugins", "tropass-provider.js");
 
-    const result = installTropassMcp({
+    const result = installTropass({
       client: "opencode",
       configPath,
       apiToken: TEST_API_TOKEN,
@@ -203,7 +203,7 @@ describe("installTropassMcp", () => {
     fs.writeFileSync(toolPath, "// stale tool from a previous install\n");
     fs.writeFileSync(toolScriptPath, "# stale script\n");
 
-    const result = installTropassMcp({
+    const result = installTropass({
       projectDir,
       scope: "project",
       apiToken: TEST_API_TOKEN,
@@ -221,7 +221,7 @@ describe("installTropassMcp", () => {
     const projectDir = createTempDir();
     const uvxCommand = "C:\\Users\\d$mikh\\.local\\bin\\uvx.exe";
 
-    installTropassMcp({
+    installTropass({
       projectDir,
       scope: "project",
       apiToken: "sk-$&-token",
@@ -238,7 +238,7 @@ describe("installTropassMcp", () => {
 
   it.each(["codex", "claude"])("rejects removed client %s", (client) => {
     expect(() =>
-      installTropassMcp({
+      installTropass({
         client,
         apiToken: TEST_API_TOKEN,
       }),
@@ -247,7 +247,7 @@ describe("installTropassMcp", () => {
 });
 
 function createTempDir(): string {
-  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "tropass-mcp-installer-"));
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "tropass-connect-"));
   tempDirs.push(tempDir);
   return tempDir;
 }
