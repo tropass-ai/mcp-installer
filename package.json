@@ -1,6 +1,6 @@
 {
   "name": "@tropass/connect",
-  "version": "2.4.2",
+  "version": "2.5.0",
   "description": "Connects agent environments to Tropass models, tools, and skills.",
   "license": "MIT",
   "type": "module",
